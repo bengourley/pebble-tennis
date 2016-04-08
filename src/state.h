@@ -1,9 +1,6 @@
 #pragma once
 
-typedef enum {
-  PLAYER_SCORE,
-  OPPONENT_SCORE,
-} SCORE;
+#include "list.h"
 
 typedef enum {
   LOVE=0,
@@ -22,8 +19,6 @@ typedef struct {
   int opponent_sets;
 } State;
 
-void add_player_score();
-void add_opponent_score();
-void undo_last_score();
-void print_state(State s);
-State next_state(State s, int point);
+State compute_state(list_t *serial);
+State *next_state(State *s, char *point);
+void debug_state(State *s);

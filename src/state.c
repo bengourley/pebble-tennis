@@ -1,17 +1,36 @@
 #include <pebble.h>
-#include "data.h"
+#include "serial.h"
+#include "state.h"
+#include "list.h"
 
-static int points[512];
-static int next_score_index = 0;
+State state_new() {
+  return (State)
+    { .player_score = 0
+    , .opponent_score = 0
+    , .player_games = 0
+    , .opponent_games = 0
+    , .player_sets = 0
+    , .opponent_sets = 0
+    };
+}
 
-State next_state(State s, int point) {
+State compute_state(list_t *serial) {
+  list_node_t *node;
+  list_iterator_t *it = list_iterator_new(serial, LIST_HEAD);
+  State state = state_new();
+  while ((node = list_iterator_next(it))) next_state(&state, node->val);
+  return state;
+}
 
-  int *scorer = point == PLAYER_SCORE ? &s.player_score : &s.opponent_score;
-  int *non_scorer = point == PLAYER_SCORE ? &s.opponent_score : &s.player_score;
-  int *scorer_games = point == PLAYER_SCORE ? &s.player_games : &s.opponent_games;
-  int *non_scorer_games = point == PLAYER_SCORE ? &s.opponent_games : &s.player_games;
-  int *scorer_sets = point == PLAYER_SCORE ? &s.player_sets : &s.opponent_sets;
-  int *non_scorer_sets = point == PLAYER_SCORE ? &s.opponent_sets : &s.player_sets;
+State *next_state(State *s, char *point) {
+
+  bool is_player_score = strcmp(point, PLAYER_SCORE) == 0;
+  int *scorer = is_player_score ? &s->player_score : &s->opponent_score;
+  int *non_scorer = is_player_score ? &s->opponent_score : &s->player_score;
+  int *scorer_games = is_player_score ? &s->player_games : &s->opponent_games;
+  int *non_scorer_games = is_player_score ? &s->opponent_games : &s->player_games;
+  int *scorer_sets = is_player_score ? &s->player_sets : &s->opponent_sets;
+//   int *non_scorer_sets = is_player_score ? &s->opponent_sets : &s->player_sets;
   
   switch (*scorer) {
     case LOVE: *scorer = FIFTEEN; break;
@@ -62,61 +81,16 @@ State next_state(State s, int point) {
 
       break;
   }
-  return s;
-
-}
-
-State get_state() {
-
-  int player_score = LOVE;
-  int opponent_score = LOVE;
-
-  int player_games = 0;
-  int opponent_games = 0;
-  
-  int player_sets = 0;
-  int opponent_sets = 0;
-  
-  State s =
-    { player_score
-    , opponent_score
-    , player_games
-    , opponent_games
-    , player_sets
-    , opponent_sets
-    };
-
-  for (int i = 0; i < next_score_index; i++) s = next_state(s, points[i]);
 
   return s;
 
 }
 
-void add_player_score() {
-  points[next_score_index] = PLAYER_SCORE;
-  next_score_index++;
-//   APP_LOG(APP_LOG_LEVEL_DEBUG, "Adding player score");
-  print_state(get_state());
-}
-
-void add_opponent_score() {
-  points[next_score_index] = OPPONENT_SCORE;
-  next_score_index++;
-//   APP_LOG(APP_LOG_LEVEL_DEBUG, "Adding opponent score");
-  print_state(get_state());
-}
-
-void undo_last_score() {
-  if (next_score_index == 0) return;
-  next_score_index--;
-  print_state(get_state());
-}
-
-void print_state(State s) {
+void debug_state(State *s) {
   char *player_score = "";
   char *opponent_score = "";
   
-  switch (s.player_score) {
+  switch (s->player_score) {
     case LOVE: player_score = "0"; break;
     case FIFTEEN: player_score = "15"; break;
     case THIRTY: player_score = "30"; break;
@@ -124,7 +98,7 @@ void print_state(State s) {
     case AD: player_score = "AD"; break;
   }
 
-  switch (s.opponent_score) {
+  switch (s->opponent_score) {
     case LOVE: opponent_score = "0"; break;
     case FIFTEEN: opponent_score = "15"; break;
     case THIRTY: opponent_score = "30"; break;
@@ -132,5 +106,5 @@ void print_state(State s) {
     case AD: opponent_score = "AD"; break;
   }
   
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "%s-%s, GAMES: %d-%d, SETS: %d-%d", player_score, opponent_score, s.player_games, s.opponent_games, s.player_sets, s.opponent_sets);
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "%s-%s, GAMES: %d-%d, SETS: %d-%d", player_score, opponent_score, s->player_games, s->opponent_games, s->player_sets, s->opponent_sets);
 }

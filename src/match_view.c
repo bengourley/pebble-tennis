@@ -5,7 +5,9 @@
 static Window *match_window;
 
 static TextLayer *player_score;
+char player_points_str[4];
 static TextLayer *opponent_score;
+char opponent_points_str[4];
 
 static TextLayer *player_games;
 char player_games_str[2];
@@ -17,13 +19,19 @@ char player_sets_str[2];
 static TextLayer *opponent_sets;
 char opponent_sets_str[2];
 
-void display_score_update(TextLayer *t, int s) {
-  switch (s) {
-    case LOVE: text_layer_set_text(t, "0"); break;
-    case FIFTEEN: text_layer_set_text(t, "15"); break;
-    case THIRTY: text_layer_set_text(t, "30"); break;
-    case FORTY: text_layer_set_text(t, "40"); break;
-    case AD: text_layer_set_text(t, "A"); break;
+void display_score_update(TextLayer *t, char * str, int s, bool is_tie_break) {
+  if (is_tie_break) {
+    snprintf(str, 3, "%d", s);
+    APP_LOG(APP_LOG_LEVEL_INFO, "%s", str);
+    text_layer_set_text(t, str);
+  } else {
+    switch (s) {
+      case LOVE: text_layer_set_text(t, "0"); break;
+      case FIFTEEN: text_layer_set_text(t, "15"); break;
+      case THIRTY: text_layer_set_text(t, "30"); break;
+      case FORTY: text_layer_set_text(t, "40"); break;
+      case AD: text_layer_set_text(t, "A"); break;
+    }
   }
 }
 
@@ -33,10 +41,10 @@ void display_digit_update(TextLayer *t, int s, char *str) {
 }
 
 void render(State *state) {
-  display_score_update(player_score, state->player_score);
+  display_score_update(player_score, player_points_str, state->player_score, state->is_tie_break);
   display_digit_update(player_games, state->player_games, player_games_str);
   display_digit_update(player_sets, state->player_sets, player_sets_str);
-  display_score_update(opponent_score, state->opponent_score);
+  display_score_update(opponent_score, opponent_points_str, state->opponent_score, state->is_tie_break);
   display_digit_update(opponent_games, state->opponent_games, opponent_games_str);
   display_digit_update(opponent_sets, state->opponent_sets, opponent_sets_str);
 }

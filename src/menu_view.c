@@ -17,7 +17,7 @@ Window *menu_view_new() {
   text_layer_set_font(title_text, fonts_get_system_font(FONT_KEY_GOTHIC_28));
   text_layer_set_text_alignment(title_text, GTextAlignmentCenter);
   layer_add_child(window_layer, (Layer *) title_text);
-  
+
   TextLayer *play_text = text_layer_create(GRect(40, 78, bounds.size.w - 80, 19));
   text_layer_set_text(play_text, "PLAY");
   text_layer_set_font(play_text, fonts_get_system_font(FONT_KEY_GOTHIC_14));

@@ -91,14 +91,14 @@ Window *match_view_new(list_t *s) {
   // Make the text
   Layer *window_layer = window_get_root_layer(match_window);
   GRect bounds = layer_get_frame(window_layer);
-  
+
   // Player score
   player_score = text_layer_create(GRect(0, 20, bounds.size.w / 2, bounds.size.h / 2));
   text_layer_set_text(player_score, "0");
   text_layer_set_font(player_score, fonts_get_system_font(FONT_KEY_BITHAM_42_LIGHT));
   text_layer_set_text_alignment(player_score, GTextAlignmentCenter);
   layer_add_child(window_layer, (Layer *) player_score);
-  
+
   // Opponent score
   opponent_score = text_layer_create(GRect(bounds.size.w / 2, 20, bounds.size.w / 2, bounds.size.h / 2));
   text_layer_set_text(opponent_score, "0");
@@ -133,7 +133,7 @@ Window *match_view_new(list_t *s) {
   text_layer_set_font(opponent_sets, fonts_get_system_font(FONT_KEY_GOTHIC_24));
   text_layer_set_text_alignment(opponent_sets, GTextAlignmentCenter);
   layer_add_child(window_layer, (Layer *) opponent_sets);
-  
+
   window_set_click_config_provider(match_window, click_config_provider);
 
   return match_window;

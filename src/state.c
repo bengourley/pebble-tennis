@@ -14,7 +14,7 @@ State state_new() {
     , .is_tie_break = false
     , .is_complete = false
     , .num_sets = 3
-    , .tie_break_at = SIX_ALL_EVERY_SET 
+    , .tie_break_at = SIX_ALL_EVERY_SET
     };
 }
 
@@ -35,7 +35,7 @@ State *next_state(State *s, char *point) {
   int *non_scorer_games = is_player_score ? &s->opponent_games : &s->player_games;
   int *scorer_sets = is_player_score ? &s->player_sets : &s->opponent_sets;
   int *non_scorer_sets = is_player_score ? &s->opponent_sets : &s->player_sets;
-  
+
   increment_point(s, scorer, non_scorer, scorer_games, non_scorer_games, scorer_sets, non_scorer_sets);
 
   return s;
@@ -43,7 +43,7 @@ State *next_state(State *s, char *point) {
 }
 
 void increment_point(State *s, int *scorer, int *non_scorer, int *scorer_games, int *non_scorer_games, int *scorer_sets, int *non_scorer_sets) {
-  
+
   if (s->is_tie_break) {
 
     if (*scorer < 6) {
@@ -136,11 +136,11 @@ void debug_state(State *s) {
 
   char player_score[4];
   char opponent_score[4];
-  
+
   if (!s->is_tie_break) {
-  
+
     // Normal game, need to convert int score to 0, 30, 40, A
-    
+
     switch (s->player_score) {
       case LOVE: snprintf(player_score, 3, "0"); break;
       case FIFTEEN: snprintf(player_score, 3, "15"); break;
@@ -164,6 +164,6 @@ void debug_state(State *s) {
     snprintf(opponent_score, 3, "%d", s->opponent_score);
 
   }
-  
+
   APP_LOG(APP_LOG_LEVEL_DEBUG, "%s-%s, GAMES: %d-%d, SETS: %d-%d, Tie Break: %d", player_score, opponent_score, s->player_games, s->opponent_games, s->player_sets, s->opponent_sets, s->is_tie_break);
 }

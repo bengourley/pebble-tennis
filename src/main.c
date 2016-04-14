@@ -2,48 +2,28 @@
 
 #include "state.h"
 #include "serial.h"
-// #include "match_view.h"
+#include "match_view.h"
 #include "menu_view.h"
 
 static Window *app_window;
 static list_t *serial;
 
-// void opponent_score_click_handler() {
-//   add_opponent_score(serial);
-//   State state = compute_state(serial);
-//   debug_state(&state);
-//   render(&state);
-//   if (state.is_complete) APP_LOG(APP_LOG_LEVEL_DEBUG, "Match complete!");
-// }
-
-// void player_score_click_handler() {
-//   add_player_score(serial);
-//   State state = compute_state(serial);
-//   debug_state(&state);
-//   render(&state);
-//   if (state.is_complete) APP_LOG(APP_LOG_LEVEL_DEBUG, "Match complete!");
-// }
-
-// void undo_click_handler() {
-//   undo(serial);
-//   State state = compute_state(serial);
-//   debug_state(&state);
-//   render(&state);
-// }
-
-// void click_config_provider(void *context) {
-// 	window_single_click_subscribe(BUTTON_ID_UP, opponent_score_click_handler);
-// 	window_single_click_subscribe(BUTTON_ID_DOWN, player_score_click_handler);
-//   window_single_click_subscribe(BUTTON_ID_SELECT, undo_click_handler);
-// }
-
-void init(void) {
+void start_match() {
   serial = serial_new();
   State state = compute_state(serial);
   debug_state(&state);
+  app_window = match_view_new(serial);
+  window_stack_push(app_window, true);
+}
+
+void menu_click_config_provider(void *context) {
+  window_single_click_subscribe(BUTTON_ID_SELECT, start_match);
+}
+
+void init(void) {
   app_window = menu_view_new();
   window_stack_push(app_window, true);
-//   window_set_click_config_provider(app_window, click_config_provider);
+  window_set_click_config_provider(app_window, menu_click_config_provider);
 }
 
 void deinit(void) {

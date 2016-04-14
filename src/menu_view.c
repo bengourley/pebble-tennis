@@ -26,11 +26,11 @@ Window *menu_view_new() {
   text_layer_set_background_color(play_text, GColorBlack);
   layer_add_child(window_layer, (Layer *) play_text);
 
-  TextLayer *configure_text = text_layer_create(GRect(40, 106, bounds.size.w - 80, 19));
-  text_layer_set_text(configure_text, "SETTINGS");
-  text_layer_set_font(configure_text, fonts_get_system_font(FONT_KEY_GOTHIC_14));
-  text_layer_set_text_alignment(configure_text, GTextAlignmentCenter);
-  layer_add_child(window_layer, (Layer *) configure_text);
+//   TextLayer *configure_text = text_layer_create(GRect(40, 106, bounds.size.w - 80, 19));
+//   text_layer_set_text(configure_text, "SETTINGS");
+//   text_layer_set_font(configure_text, fonts_get_system_font(FONT_KEY_GOTHIC_14));
+//   text_layer_set_text_alignment(configure_text, GTextAlignmentCenter);
+//   layer_add_child(window_layer, (Layer *) configure_text);
 
   return menu_window;
 

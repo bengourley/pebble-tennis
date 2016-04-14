@@ -1,8 +1,10 @@
 #include <pebble.h>
 #include "match_view.h"
 #include "state.h"
+#include "serial.h"
 
 static Window *match_window;
+static list_t *serial;
 
 static TextLayer *player_score;
 char player_points_str[4];
@@ -18,6 +20,35 @@ static TextLayer *player_sets;
 char player_sets_str[2];
 static TextLayer *opponent_sets;
 char opponent_sets_str[2];
+
+void opponent_score_click_handler() {
+  add_opponent_score(serial);
+  State state = compute_state(serial);
+  debug_state(&state);
+  render(&state);
+  if (state.is_complete) APP_LOG(APP_LOG_LEVEL_DEBUG, "Match complete!");
+}
+
+void player_score_click_handler() {
+  add_player_score(serial);
+  State state = compute_state(serial);
+  debug_state(&state);
+  render(&state);
+  if (state.is_complete) APP_LOG(APP_LOG_LEVEL_DEBUG, "Match complete!");
+}
+
+void undo_click_handler() {
+  undo(serial);
+  State state = compute_state(serial);
+  debug_state(&state);
+  render(&state);
+}
+
+void click_config_provider(void *context) {
+	window_single_click_subscribe(BUTTON_ID_UP, opponent_score_click_handler);
+	window_single_click_subscribe(BUTTON_ID_DOWN, player_score_click_handler);
+  window_single_click_subscribe(BUTTON_ID_SELECT, undo_click_handler);
+}
 
 void display_score_update(TextLayer *t, char * str, int s, bool is_tie_break) {
   if (is_tie_break) {
@@ -53,8 +84,9 @@ void deinit_match() {
   window_destroy(match_window);
 }
 
-Window *match_view_new() {
+Window *match_view_new(list_t *s) {
   match_window = window_create();
+  serial = s;
 
   // Make the text
   Layer *window_layer = window_get_root_layer(match_window);
@@ -101,6 +133,8 @@ Window *match_view_new() {
   text_layer_set_font(opponent_sets, fonts_get_system_font(FONT_KEY_GOTHIC_24));
   text_layer_set_text_alignment(opponent_sets, GTextAlignmentCenter);
   layer_add_child(window_layer, (Layer *) opponent_sets);
+  
+  window_set_click_config_provider(match_window, click_config_provider);
 
   return match_window;
 }

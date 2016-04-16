@@ -1,7 +1,7 @@
 #include <pebble.h>
 #include "serial.h"
 #include "state.h"
-#include "list.h"
+#include "../deps/list/list.h"
 
 State state_new() {
   return (State)

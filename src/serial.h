@@ -1,6 +1,6 @@
 #pragma once
 
-#include "list.h"
+#include "../deps/list/list.h"
 
 #define PLAYER_SCORE "P"
 #define OPPONENT_SCORE "O"

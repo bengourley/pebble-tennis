@@ -21,7 +21,7 @@ char player_sets_str[2];
 static TextLayer *opponent_sets;
 char opponent_sets_str[2];
 
-void opponent_score_click_handler() {
+void opponent_score_click_handler(ClickRecognizerRef recognizer, void *context) {
   add_opponent_score(serial);
   State state = compute_state(serial);
   debug_state(&state);
@@ -29,7 +29,7 @@ void opponent_score_click_handler() {
   if (state.is_complete) APP_LOG(APP_LOG_LEVEL_DEBUG, "Match complete!");
 }
 
-void player_score_click_handler() {
+void player_score_click_handler(ClickRecognizerRef recognizer, void *context) {
   add_player_score(serial);
   State state = compute_state(serial);
   debug_state(&state);
@@ -37,7 +37,7 @@ void player_score_click_handler() {
   if (state.is_complete) APP_LOG(APP_LOG_LEVEL_DEBUG, "Match complete!");
 }
 
-void undo_click_handler() {
+void undo_click_handler(ClickRecognizerRef recognizer, void *context) {
   undo(serial);
   State state = compute_state(serial);
   debug_state(&state);

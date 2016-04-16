@@ -1,6 +1,6 @@
 #include <pebble.h>
 #include "serial.h"
-#include "list.h"
+#include "../deps/list/list.h"
 
 list_t *serial_new() {
   return list_new();

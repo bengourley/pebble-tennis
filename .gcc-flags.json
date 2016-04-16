@@ -1,0 +1,8 @@
+{
+  "execPath": "/usr/bin/g++",
+  "gccDefaultCFlags": "-Wall",
+  "gccErrorLimit": 0,
+  "gccIncludePaths":
+    ".,./deps,./build,./build/aplite,/home/beng/.pebble-sdk/SDKs/3.11.1/sdk-core/pebble/basalt/include",
+  "gccSuppressWarnings": false
+}

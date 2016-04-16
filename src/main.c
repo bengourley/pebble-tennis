@@ -8,7 +8,7 @@
 static Window *app_window;
 static list_t *serial;
 
-void start_match() {
+void start_match(ClickRecognizerRef recognizer, void *context) {
   serial = serial_new();
   State state = compute_state(serial);
   debug_state(&state);

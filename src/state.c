@@ -3,7 +3,7 @@
 #include "state.h"
 #include "../deps/list/list.h"
 
-State state_new() {
+State state_new(Settings *settings) {
   return (State)
     { .player_score = 0
     , .opponent_score = 0
@@ -13,16 +13,18 @@ State state_new() {
     , .opponent_sets = 0
     , .is_tie_break = false
     , .is_complete = false
-    , .num_sets = 3
-    , .tie_break_at = SIX_ALL_EVERY_SET
+    , .num_sets = settings->num_sets
+    , .tie_breaks = settings->tie_breaks
+    , .final_set = settings->final_set
     };
 }
 
-State compute_state(list_t *serial) {
+State compute_state(list_t *serial, Settings *settings) {
   list_node_t *node;
   list_iterator_t *it = list_iterator_new(serial, LIST_HEAD);
-  State state = state_new();
-  while ((node = list_iterator_next(it))) next_state(&state, node->val);
+  State state = state_new(settings);
+  while ((node = list_iterator_next(it))) next_state(&state, (char *) node->val);
+  list_iterator_destroy(it);
   return state;
 }
 
@@ -89,10 +91,9 @@ void increment_point(State *s, int *scorer, int *non_scorer, int *scorer_games, 
 
 void increment_game(State *s, int *scorer_games, int *non_scorer_games, int *scorer_sets, int *non_scorer_sets) {
 
-  switch (s->tie_break_at) {
+  switch (s->tie_breaks) {
 
-    case NEVER:
-    case LAST_SET:
+    case NO:
       if (*scorer_games < 5) {
         *scorer_games = *scorer_games + 1;
       } else if (*scorer_games - *non_scorer_games < 1) {
@@ -102,8 +103,7 @@ void increment_game(State *s, int *scorer_games, int *non_scorer_games, int *sco
       }
       break;
 
-    case SIX_ALL_EVERY_SET:
-    case SIX_ALL_EVERY_SET_LAST_SET_CHAMPIONSHIP_TIE_BREAK:
+    case YES:
       if (s->is_tie_break) {
         s->is_tie_break = false;
         *scorer_games = 0;
@@ -165,5 +165,8 @@ void debug_state(State *s) {
 
   }
 
-  APP_LOG(APP_LOG_LEVEL_DEBUG, "%s-%s, GAMES: %d-%d, SETS: %d-%d, Tie Break: %d", player_score, opponent_score, s->player_games, s->opponent_games, s->player_sets, s->opponent_sets, s->is_tie_break);
+  APP_LOG(APP_LOG_LEVEL_DEBUG
+    , "%d set match, %s-%s, GAMES: %d-%d, SETS: %d-%d, Tie Break: %d"
+    , s->num_sets, player_score, opponent_score, s->player_games
+    , s->opponent_games, s->player_sets, s->opponent_sets, s->is_tie_break);
 }

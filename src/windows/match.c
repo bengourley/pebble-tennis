@@ -1,10 +1,11 @@
 #include <pebble.h>
-#include "match_view.h"
-#include "state.h"
-#include "serial.h"
+#include "match.h"
+#include "../state.h"
+#include "../serial.h"
 
-static Window *match_window;
+static Window *s_main_window;
 static list_t *serial;
+static Settings settings;
 
 static TextLayer *player_score;
 char player_points_str[4];
@@ -20,35 +21,6 @@ static TextLayer *player_sets;
 char player_sets_str[2];
 static TextLayer *opponent_sets;
 char opponent_sets_str[2];
-
-void opponent_score_click_handler(ClickRecognizerRef recognizer, void *context) {
-  add_opponent_score(serial);
-  State state = compute_state(serial);
-  debug_state(&state);
-  render(&state);
-  if (state.is_complete) APP_LOG(APP_LOG_LEVEL_DEBUG, "Match complete!");
-}
-
-void player_score_click_handler(ClickRecognizerRef recognizer, void *context) {
-  add_player_score(serial);
-  State state = compute_state(serial);
-  debug_state(&state);
-  render(&state);
-  if (state.is_complete) APP_LOG(APP_LOG_LEVEL_DEBUG, "Match complete!");
-}
-
-void undo_click_handler(ClickRecognizerRef recognizer, void *context) {
-  undo(serial);
-  State state = compute_state(serial);
-  debug_state(&state);
-  render(&state);
-}
-
-void click_config_provider(void *context) {
-	window_single_click_subscribe(BUTTON_ID_UP, opponent_score_click_handler);
-	window_single_click_subscribe(BUTTON_ID_DOWN, player_score_click_handler);
-  window_single_click_subscribe(BUTTON_ID_SELECT, undo_click_handler);
-}
 
 void display_score_update(TextLayer *t, char * str, int s, bool is_tie_break) {
   if (is_tie_break) {
@@ -80,20 +52,47 @@ void render(State *state) {
   display_digit_update(opponent_sets, state->opponent_sets, opponent_sets_str);
 }
 
-void deinit_match() {
-  window_destroy(match_window);
+void opponent_score_click_handler(ClickRecognizerRef recognizer, void *context) {
+  add_opponent_score(serial);
+  State state = compute_state(serial, &settings);
+  debug_state(&state);
+  render(&state);
+  if (state.is_complete) APP_LOG(APP_LOG_LEVEL_DEBUG, "Match complete!");
 }
 
-Window *match_view_new(list_t *s) {
-  match_window = window_create();
-  serial = s;
+void player_score_click_handler(ClickRecognizerRef recognizer, void *context) {
+  add_player_score(serial);
+  State state = compute_state(serial, &settings);
+  debug_state(&state);
+  render(&state);
+  if (state.is_complete) APP_LOG(APP_LOG_LEVEL_DEBUG, "Match complete!");
+}
+
+void undo_click_handler(ClickRecognizerRef recognizer, void *context) {
+  undo(serial);
+  State state = compute_state(serial, &settings);
+  debug_state(&state);
+  render(&state);
+}
+
+void click_config_provider(void *context) {
+	window_single_click_subscribe(BUTTON_ID_UP, opponent_score_click_handler);
+	window_single_click_subscribe(BUTTON_ID_DOWN, player_score_click_handler);
+  window_single_click_subscribe(BUTTON_ID_SELECT, undo_click_handler);
+}
+
+static void window_load(Window *window) {
+
+  if (!serial) serial = serial_new();
+  State state = compute_state(serial, &settings);
+  debug_state(&state);
 
   // Make the text
-  Layer *window_layer = window_get_root_layer(match_window);
+  Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_frame(window_layer);
 
   // Player score
-  player_score = text_layer_create(GRect(0, 20, bounds.size.w / 2, bounds.size.h / 2));
+  player_score = text_layer_create(GRect(0, 20, (int16_t) bounds.size.w / 2, bounds.size.h / 2));
   text_layer_set_text(player_score, "0");
   text_layer_set_font(player_score, fonts_get_system_font(FONT_KEY_BITHAM_42_LIGHT));
   text_layer_set_text_alignment(player_score, GTextAlignmentCenter);
@@ -134,7 +133,24 @@ Window *match_view_new(list_t *s) {
   text_layer_set_text_alignment(opponent_sets, GTextAlignmentCenter);
   layer_add_child(window_layer, (Layer *) opponent_sets);
 
-  window_set_click_config_provider(match_window, click_config_provider);
+  render(&state);
 
-  return match_window;
+}
+
+static void window_unload(Window *window) {
+  window_destroy(window);
+  s_main_window = NULL;
+}
+
+void match_window_push(Settings *s) {
+  if (!s_main_window) {
+    settings = *s;
+    s_main_window = window_create();
+    window_set_window_handlers(s_main_window, (WindowHandlers) {
+      .load = window_load,
+      .unload = window_unload
+    });
+    window_set_click_config_provider(s_main_window, click_config_provider);
+  }
+  window_stack_push(s_main_window, true);
 }

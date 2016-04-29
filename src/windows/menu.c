@@ -1,6 +1,7 @@
-#include <pebble.h>
 #include "menu.h"
 #include "match.h"
+// #include "server_select.h"
+#include "../persistence.h"
 
 static Window *s_main_window;
 
@@ -9,7 +10,6 @@ static SimpleMenuSection menu_sections[2];
 static SimpleMenuItem menu_items[1];
 static SimpleMenuItem option_menu_items[4];
 
-const char *match_type_options[] = { "1", "3", "5" };
 const char *final_set_options[] = { "Tie break at 6-6", "No tie break", "Championship tie break" };
 const char *switch_options[] = { "Yes", "No" };
 
@@ -62,14 +62,29 @@ void cycle_tie_breaks_setting() {
   layer_mark_dirty(simple_menu_layer_get_layer(menu_layer));
 }
 
+void load_settings() {
+  if (persist_exists(NUM_SETS)) settings.num_sets = persist_read_int(NUM_SETS);
+  if (persist_exists(TIE_BREAKS)) settings.tie_breaks = persist_read_int(TIE_BREAKS);
+  if (persist_exists(FINAL_SET)) settings.final_set = persist_read_int(FINAL_SET);
+}
+
+void save_settings() {
+  persist_write_int(NUM_SETS, settings.num_sets);
+  persist_write_int(TIE_BREAKS, settings.tie_breaks);
+  persist_write_int(FINAL_SET, settings.final_set);
+}
+
 void start_match() {
   match_window_push(&settings);
+  save_settings();
 }
 
 static void window_load(Window *window) {
 
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_bounds(window_layer);
+
+  load_settings();
 
   menu_sections[0] = (SimpleMenuSection) {
     .num_items = 1,

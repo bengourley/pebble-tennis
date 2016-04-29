@@ -7,11 +7,15 @@ list_t *serial_new() {
 }
 
 void add_opponent_score(list_t *serial) {
-  list_rpush(serial, list_node_new((void *) OPPONENT_SCORE));
+  char *c = (char *) malloc(sizeof(char));
+  *c = OPPONENT_SCORE;
+  list_rpush(serial, list_node_new((void *) c));
 }
 
 void add_player_score(list_t *serial) {
-  list_rpush(serial, list_node_new((void *) PLAYER_SCORE));
+  char *c = (char *) malloc(sizeof(char));
+  *c = PLAYER_SCORE;
+  list_rpush(serial, list_node_new((void *) c));
 }
 
 void undo(list_t *serial) {

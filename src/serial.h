@@ -3,8 +3,10 @@
 
 #include "../deps/list/list.h"
 
-#define PLAYER_SCORE "P"
-#define OPPONENT_SCORE "O"
+typedef enum {
+  PLAYER_SCORE='P',
+  OPPONENT_SCORE='O'
+} POINTS;
 
 list_t *serial_new();
 void add_player_score(list_t *serial);

@@ -30,7 +30,7 @@ State compute_state(list_t *serial, Settings *settings) {
 
 State *next_state(State *s, char *point) {
 
-  bool is_player_score = strcmp(point, PLAYER_SCORE) == 0;
+  bool is_player_score = *point == PLAYER_SCORE;
   int *scorer = is_player_score ? &s->player_score : &s->opponent_score;
   int *non_scorer = is_player_score ? &s->opponent_score : &s->player_score;
   int *scorer_games = is_player_score ? &s->player_games : &s->opponent_games;

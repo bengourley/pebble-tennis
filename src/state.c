@@ -163,6 +163,8 @@ void increment_game(State *s, int *scorer_games, int *non_scorer_games, int *sco
   } else if (*scorer_games - *non_scorer_games < 1) {
     *scorer_games = *scorer_games + 1;
   } else {
+    *scorer_games = 0;
+    *non_scorer_games = 0;
     increment_set(s, scorer_sets, non_scorer_sets);
   }
 

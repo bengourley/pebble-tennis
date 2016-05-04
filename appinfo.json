@@ -5,13 +5,13 @@
     ],
     "companyName": "bn@grly.me",
     "enableMultiJS": true,
-    "longName": "Tennis Scorekeeper",
+    "longName": "Pebble Tennis",
     "projectType": "native",
     "resources": {
         "media": []
     },
     "sdkVersion": "3",
-    "shortName": "Tennis Scorekeeper",
+    "shortName": "Tennis",
     "targetPlatforms": [
         "aplite",
         "basalt",
@@ -20,6 +20,6 @@
     "uuid": "4713b35f-d2ad-4f01-af1f-af5da127d058",
     "versionLabel": "1.0",
     "watchapp": {
-        "watchface": false
+      "watchface": false
     }
 }

@@ -1,29 +1,27 @@
 #include "menu.h"
-#include "match.h"
-// #include "server_select.h"
-#include "../persistence.h"
 
 static Window *s_main_window;
 
-static SimpleMenuLayer *menu_layer;
-static SimpleMenuSection menu_sections[2];
-static SimpleMenuItem menu_items[1];
-static SimpleMenuItem option_menu_items[4];
+static SimpleMenuLayer *main_menu_layer;
+static SimpleMenuSection main_menu_sections[2];
+static SimpleMenuItem main_menu_items[1];
+static SimpleMenuItem main_menu_item_options[4];
 
-const char *final_set_options[] = { "Tie break at 6-6", "No tie break", "Championship tie break" };
-const char *switch_options[] = { "Yes", "No" };
+static const char *final_set_options[] = { "Tie break at 6-6", "No tie break", "Championship tie break" };
+static const char *switch_options[] = { "Yes", "No" };
 
 static Settings settings =
   { .num_sets = 3
   , .tie_breaks = YES
   , .final_set = FINAL_SET_SIX_ALL_TIE_BREAK
+  , .first_server = PLAYER
   };
 
 void toggle_switch_setting(int *setting) {
   *setting ^= 1;
 }
 
-char* num_sets_to_string(int n) {
+const char *num_sets_to_string(int n) {
   switch (n) {
     case 1: return "1";
     case 3: return "3";
@@ -42,8 +40,8 @@ void cycle_match_type() {
       settings.num_sets = 1;
       break;
   }
-  option_menu_items[0].subtitle = num_sets_to_string(settings.num_sets);
-  layer_mark_dirty(simple_menu_layer_get_layer(menu_layer));
+  main_menu_item_options[0].subtitle = num_sets_to_string(settings.num_sets);
+  layer_mark_dirty(simple_menu_layer_get_layer(main_menu_layer));
 }
 
 void cycle_final_set_setting() {
@@ -52,31 +50,20 @@ void cycle_final_set_setting() {
   } else {
     settings.final_set = 0;
   }
-  option_menu_items[2].subtitle = final_set_options[settings.final_set];
-  layer_mark_dirty(simple_menu_layer_get_layer(menu_layer));
+  main_menu_item_options[2].subtitle = final_set_options[settings.final_set];
+  layer_mark_dirty(simple_menu_layer_get_layer(main_menu_layer));
 }
 
 void cycle_tie_breaks_setting() {
   toggle_switch_setting(&settings.tie_breaks);
-  option_menu_items[1].subtitle = switch_options[settings.tie_breaks];
-  layer_mark_dirty(simple_menu_layer_get_layer(menu_layer));
-}
-
-void load_settings() {
-  if (persist_exists(NUM_SETS)) settings.num_sets = persist_read_int(NUM_SETS);
-  if (persist_exists(TIE_BREAKS)) settings.tie_breaks = persist_read_int(TIE_BREAKS);
-  if (persist_exists(FINAL_SET)) settings.final_set = persist_read_int(FINAL_SET);
-}
-
-void save_settings() {
-  persist_write_int(NUM_SETS, settings.num_sets);
-  persist_write_int(TIE_BREAKS, settings.tie_breaks);
-  persist_write_int(FINAL_SET, settings.final_set);
+  main_menu_item_options[1].subtitle = switch_options[settings.tie_breaks];
+  layer_mark_dirty(simple_menu_layer_get_layer(main_menu_layer));
 }
 
 void start_match() {
-  match_window_push(&settings);
-  save_settings();
+  window_stack_pop(false);
+  match_window_push(&settings, serial_new());
+  save_settings(&settings);
 }
 
 static void window_load(Window *window) {
@@ -84,44 +71,44 @@ static void window_load(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_bounds(window_layer);
 
-  load_settings();
+  load_settings(&settings);
 
-  menu_sections[0] = (SimpleMenuSection) {
+  main_menu_sections[0] = (SimpleMenuSection) {
     .num_items = 1,
-    .items = menu_items
+    .items = main_menu_items
   };
 
-  menu_items[0] = (SimpleMenuItem) {
+  main_menu_items[0] = (SimpleMenuItem) {
     .title = "Start Match",
     .callback = start_match
   };
 
-  menu_sections[1] = (SimpleMenuSection) {
+  main_menu_sections[1] = (SimpleMenuSection) {
     .title = "Match Settings",
-    .items = option_menu_items,
+    .items = main_menu_item_options,
     .num_items = 3
   };
 
-  option_menu_items[0] = (SimpleMenuItem) {
+  main_menu_item_options[0] = (SimpleMenuItem) {
     .title = "Sets",
     .subtitle = num_sets_to_string(settings.num_sets),
     .callback = cycle_match_type
   };
 
-  option_menu_items[1] = (SimpleMenuItem) {
+  main_menu_item_options[1] = (SimpleMenuItem) {
     .title = "Tie Breaks",
     .subtitle = switch_options[settings.tie_breaks],
     .callback = cycle_tie_breaks_setting
   };
 
-  option_menu_items[2] = (SimpleMenuItem) {
+  main_menu_item_options[2] = (SimpleMenuItem) {
     .title = "Final Set",
     .subtitle = final_set_options[settings.final_set],
     .callback = cycle_final_set_setting
   };
 
-  menu_layer = simple_menu_layer_create(bounds, window, menu_sections, 2, NULL);
-  layer_add_child(window_layer, simple_menu_layer_get_layer(menu_layer));
+  main_menu_layer = simple_menu_layer_create(bounds, window, main_menu_sections, 2, NULL);
+  layer_add_child(window_layer, simple_menu_layer_get_layer(main_menu_layer));
 
 }
 

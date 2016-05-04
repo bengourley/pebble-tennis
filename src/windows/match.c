@@ -1,37 +1,35 @@
 #include "match.h"
-#include "../state.h"
-#include "../serial.h"
-#include "../persistence.h"
 
-static Window *s_main_window;
 static list_t *serial;
+static Window *s_main_window;
 static Settings settings;
 
 static TextLayer *sets_label;
 static TextLayer *games_label;
 
 static TextLayer *player_score;
-char player_points_str[4];
+static char player_points_str[4];
 static TextLayer *opponent_score;
-char opponent_points_str[4];
+static char opponent_points_str[4];
 
 static TextLayer *player_games;
-char player_games_str[2];
+static char player_games_str[2];
 static TextLayer *opponent_games;
-char opponent_games_str[2];
+static char opponent_games_str[2];
 
 static TextLayer *player_sets;
-char player_sets_str[2];
+static char player_sets_str[2];
 static TextLayer *opponent_sets;
-char opponent_sets_str[2];
+static char opponent_sets_str[2];
 
-// static uint8_t blank_byte = 0;
-// static uint8_t mask = 128;
+static Layer *layout_layer;
+static Layer *server_marker_layer;
 
-void display_score_update(TextLayer *t, char * str, int s, bool is_tie_break) {
+static int server;
+
+static void display_score_update(TextLayer *t, char * str, int s, bool is_tie_break) {
   if (is_tie_break) {
     snprintf(str, 3, "%d", s);
-    APP_LOG(APP_LOG_LEVEL_INFO, "%s", str);
     text_layer_set_text(t, str);
   } else {
     switch (s) {
@@ -44,132 +42,117 @@ void display_score_update(TextLayer *t, char * str, int s, bool is_tie_break) {
   }
 }
 
-void display_digit_update(TextLayer *t, int s, char *str) {
+static void display_digit_update(TextLayer *t, int s, char *str) {
   snprintf(str, sizeof(str), "%d", s);
   text_layer_set_text(t, str);
 }
 
-void render(State *state) {
-  display_score_update(player_score, player_points_str, state->player_score, state->is_tie_break);
+static void render(State *state) {
+  bool is_tie_break = state->is_tie_break || (state->is_final_set && state->final_set == FINAL_SET_CHAMPIONSHIP_TIE_BREAK);
+  display_score_update(player_score, player_points_str, state->player_score, is_tie_break);
   display_digit_update(player_games, state->player_games, player_games_str);
   display_digit_update(player_sets, state->player_sets, player_sets_str);
-  display_score_update(opponent_score, opponent_points_str, state->opponent_score, state->is_tie_break);
+  display_score_update(opponent_score, opponent_points_str, state->opponent_score, is_tie_break);
   display_digit_update(opponent_games, state->opponent_games, opponent_games_str);
   display_digit_update(opponent_sets, state->opponent_sets, opponent_sets_str);
+  server = state->server;
+  draw_server_marker();
 }
 
-void opponent_score_click_handler(ClickRecognizerRef recognizer, void *context) {
+static void show_summary() {
+  window_stack_pop_all(true);
+  State state = compute_state(serial, &settings);
+  summary_window_push(&state);
+}
+
+static void opponent_score_click_handler(ClickRecognizerRef recognizer, void *context) {
   add_opponent_score(serial);
   State state = compute_state(serial, &settings);
   debug_state(&state);
   render(&state);
-  if (state.is_complete) APP_LOG(APP_LOG_LEVEL_DEBUG, "Match complete!");
+  if (state.is_complete) {
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Match complete!");
+    show_summary();
+  }
 }
 
-void player_score_click_handler(ClickRecognizerRef recognizer, void *context) {
+static void player_score_click_handler(ClickRecognizerRef recognizer, void *context) {
   add_player_score(serial);
   State state = compute_state(serial, &settings);
   debug_state(&state);
   render(&state);
-  if (state.is_complete) APP_LOG(APP_LOG_LEVEL_DEBUG, "Match complete!");
+  if (state.is_complete) {
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Match complete!");
+    show_summary();
+  }
 }
 
-void undo_click_handler(ClickRecognizerRef recognizer, void *context) {
-  undo(serial);
+static void undo_click_handler(ClickRecognizerRef recognizer, void *context) {
+  if (serial->len > 0) {
+    // If there are scores, middle button rewinds
+    undo(serial);
+  } else {
+    // If there is no score yet, middle button toggles first server
+    if (settings.first_server == PLAYER) {
+      settings.first_server = OPPONENT;
+    } else {
+      settings.first_server = PLAYER;
+    }
+  }
   State state = compute_state(serial, &settings);
   debug_state(&state);
   render(&state);
 }
 
-void click_config_provider(void *context) {
+static void menu_click_handler(ClickRecognizerRef recognize, void *context) {
+  in_play_menu_window_push(serial);
+}
+
+static void click_config_provider(void *context) {
   window_single_click_subscribe(BUTTON_ID_UP, opponent_score_click_handler);
   window_single_click_subscribe(BUTTON_ID_DOWN, player_score_click_handler);
   window_single_click_subscribe(BUTTON_ID_SELECT, undo_click_handler);
+  window_single_click_subscribe(BUTTON_ID_BACK, menu_click_handler);
 }
 
-
-// const char *byte_to_binary(int x) {
-//   static char b[9];
-//   b[0] = '\0';
-//   int z;
-//   for (z = 128; z > 0; z >>= 1) {
-//     strcat(b, ((x & z) == z) ? "1" : "0");
-//   }
-//   return b;
-// }
-
-void save_match() {
-  // int len = serial->len / 8;
-  // uint8_t buffer[len];
-  // list_node_t *node;
-  // list_iterator_t *it = list_iterator_new(serial, LIST_HEAD);
-  // int i = 0;
-  // int current_byte = -1;
-  // while ((node = list_iterator_next(it))) {
-  //   if (i % 8 == 0) {
-  //     ++current_byte;
-  //     buffer[current_byte] = blank_byte;
-  //   }
-  //   if (*(char *) node->val == 'P') {
-  //     buffer[current_byte] = buffer[current_byte] | mask >> i % 8;
-  //   }
-  //   ++i;
-    // if (i % 8 == 0) {
-    //   APP_LOG(APP_LOG_LEVEL_INFO, "buffer[current_byte]=%s", byte_to_binary(buffer[current_byte]));
-    // }
-  // }
-  // list_iterator_destroy(it);
-  // persist_write_data(SERIALISED_MATCH, buffer, len);
-  // persist_write_int(SERIALISED_MATCH_SIZE, serial->len);
-}
-
-void load_match() {
-  // if (!persist_exists(SERIALISED_MATCH_SIZE)) return;
-  // int len = persist_read_int(SERIALISED_MATCH_SIZE);
-  // uint8_t buffer[len / 8];
-  // persist_read_data(SERIALISED_MATCH, buffer, len);
-  // serial = serial_new();
-  // APP_LOG(APP_LOG_LEVEL_INFO, "read len %d", len);
-  // for (int i = 0; i < len; i++) {
-  //   for (int z = 128; z > 0; z >>= 1) {
-  //     APP_LOG(APP_LOG_LEVEL_INFO, "buffer[i] %d", buffer[i]);
-  //     APP_LOG(APP_LOG_LEVEL_INFO, "is 1 %d", (buffer[i] & z) == z);
-  //     if ((buffer[i] & z) == z) {
-  //       add_player_score(serial);
-  //     } else {
-  //       add_opponent_score(serial);
-  //     }
-  //   }
-  // }
-}
-
-static void canvas_update_proc(Layer *layer, GContext *ctx) {
+static void layout_update_proc(Layer *layer, GContext *ctx) {
   GRect bounds = layer_get_frame(layer);
-  // Set the line color
   graphics_context_set_stroke_color(ctx, GColorBlack);
-  graphics_context_set_fill_color(ctx, GColorBlack);
-  // Draw a line
-  // graphics_draw_line(ctx, GPoint(bounds.size.w - 10, 10), GPoint(bounds.size.w - 10, bounds.size.h - 20));
-  // Draw a line
   graphics_draw_line(ctx, GPoint(2, bounds.size.h / 2), GPoint(bounds.size.w - 2, bounds.size.h / 2));
-  graphics_fill_circle(ctx, GPoint(bounds.size.w - 10, 1 + bounds.size.h / 4), 3);
 }
 
 static void draw_layout() {
-  static Layer *s_canvas_layer;
   GRect bounds = layer_get_bounds(window_get_root_layer(s_main_window));
-  // Create canvas layer
-  s_canvas_layer = layer_create(bounds);
-  // Assign the custom drawing procedure
-  layer_set_update_proc(s_canvas_layer, canvas_update_proc);
-  // Add to Window
-  layer_add_child(window_get_root_layer(s_main_window), s_canvas_layer);
+  layout_layer = layer_create(bounds);
+  layer_set_update_proc(layout_layer, layout_update_proc);
+  layer_add_child(window_get_root_layer(s_main_window), layout_layer);
+}
+
+static void server_marker_update_proc(Layer *layer, GContext *ctx) {
+  GRect bounds = layer_get_frame(layer);
+  graphics_context_set_stroke_color(ctx, GColorBlack);
+  graphics_context_set_fill_color(ctx, GColorBlack);
+  if (server == PLAYER) {
+    graphics_fill_circle(ctx, GPoint(bounds.size.w - 8, bounds.size.h * 0.75), 3);
+  } else {
+    graphics_fill_circle(ctx, GPoint(bounds.size.w - 8, bounds.size.h / 4), 3);
+  }
+}
+
+void draw_server_marker() {
+  if (server_marker_layer) {
+    layer_mark_dirty(server_marker_layer);
+  } else {
+    GRect bounds = layer_get_bounds(window_get_root_layer(s_main_window));
+    server_marker_layer = layer_create(bounds);
+    layer_set_update_proc(server_marker_layer, server_marker_update_proc);
+    layer_add_child(window_get_root_layer(s_main_window), server_marker_layer);
+  }
 }
 
 static void window_load(Window *window) {
 
-  load_match();
-  if (!serial) serial = serial_new();
+  // if (!serial) serial = serial_new();
   State state = compute_state(serial, &settings);
   debug_state(&state);
 
@@ -178,51 +161,51 @@ static void window_load(Window *window) {
   GRect bounds = layer_get_frame(window_layer);
 
   // Player sets
-  player_sets = text_layer_create(GRect(10, -9 + (bounds.size.h * 0.75), 20, 18));
+  player_sets = text_layer_create(GRect(13, -19 + (bounds.size.h * 0.75), 20, 28));
   text_layer_set_text(player_sets, "0");
-  text_layer_set_font(player_sets, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
+  text_layer_set_font(player_sets, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
   text_layer_set_text_alignment(player_sets, GTextAlignmentCenter);
   layer_add_child(window_layer, (Layer *) player_sets);
 
   // Opponent sets
-  opponent_sets = text_layer_create(GRect(10, -9 + (bounds.size.h / 4), 20, 18));
+  opponent_sets = text_layer_create(GRect(13, -19 + (bounds.size.h / 4), 20, 28));
   text_layer_set_text(opponent_sets, "0");
-  text_layer_set_font(opponent_sets, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
+  text_layer_set_font(opponent_sets, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
   text_layer_set_text_alignment(opponent_sets, GTextAlignmentCenter);
   layer_add_child(window_layer, (Layer *) opponent_sets);
 
   // Player games
-  player_games = text_layer_create(GRect(42, -9 + (bounds.size.h * 0.75), 30, 18));
+  player_games = text_layer_create(GRect(42, -19 + (bounds.size.h * 0.75), 30, 28));
   text_layer_set_text(player_games, "0");
-  text_layer_set_font(player_games, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
+  text_layer_set_font(player_games, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
   text_layer_set_text_alignment(player_games, GTextAlignmentCenter);
   layer_add_child(window_layer, (Layer *) player_games);
 
   // Opponent games
-  opponent_games = text_layer_create(GRect(42, -9 + (bounds.size.h / 4), 30, 18));
+  opponent_games = text_layer_create(GRect(42, -19 + (bounds.size.h / 4), 30, 28));
   text_layer_set_text(opponent_games, "0");
-  text_layer_set_font(opponent_games, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
+  text_layer_set_font(opponent_games, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
   text_layer_set_text_alignment(opponent_games, GTextAlignmentCenter);
   layer_add_child(window_layer, (Layer *) opponent_games);
 
   // Player score
-  player_score = text_layer_create(GRect(bounds.size.w / 2, 25 + bounds.size.h / 2, bounds.size.w / 2, bounds.size.h / 2));
+  player_score = text_layer_create(GRect(bounds.size.w / 2, 14 + bounds.size.h / 2, -10 + (bounds.size.w / 2), bounds.size.h / 2));
   text_layer_set_text(player_score, "0");
-  text_layer_set_font(player_score, fonts_get_system_font(FONT_KEY_BITHAM_30_BLACK));
+  text_layer_set_font(player_score, fonts_get_system_font(FONT_KEY_BITHAM_42_BOLD));
   text_layer_set_text_alignment(player_score, GTextAlignmentCenter);
   layer_add_child(window_layer, (Layer *) player_score);
 
   // Opponent score
-  opponent_score = text_layer_create(GRect(bounds.size.w / 2, 25, bounds.size.w / 2, bounds.size.h / 2));
+  opponent_score = text_layer_create(GRect(bounds.size.w / 2, 14, -10 + (bounds.size.w / 2), bounds.size.h / 2));
   text_layer_set_text(opponent_score, "0");
-  text_layer_set_font(opponent_score, fonts_get_system_font(FONT_KEY_BITHAM_30_BLACK));
+  text_layer_set_font(opponent_score, fonts_get_system_font(FONT_KEY_BITHAM_42_BOLD));
   text_layer_set_text_alignment(opponent_score, GTextAlignmentCenter);
   layer_add_child(window_layer, (Layer *) opponent_score);
 
   draw_layout();
 
   // Sets label
-  sets_label = text_layer_create(GRect(5, -10 + (bounds.size.h / 2), 28, 20));
+  sets_label = text_layer_create(GRect(8, -10 + (bounds.size.h / 2), 28, 20));
   text_layer_set_background_color(sets_label, GColorWhite);
   text_layer_set_text(sets_label, "SETS");
   text_layer_set_font(sets_label, fonts_get_system_font(FONT_KEY_GOTHIC_14));
@@ -242,14 +225,18 @@ static void window_load(Window *window) {
 }
 
 static void window_unload(Window *window) {
-  save_match();
+  layer_destroy(layout_layer);
+  layout_layer = NULL;
+  layer_destroy(server_marker_layer);
+  server_marker_layer = NULL;
   window_destroy(window);
   s_main_window = NULL;
 }
 
-void match_window_push(Settings *s) {
+void match_window_push(Settings *s, list_t *srl) {
   if (!s_main_window) {
     settings = *s;
+    serial = srl;
     s_main_window = window_create();
     window_set_window_handlers(s_main_window, (WindowHandlers) {
       .load = window_load,

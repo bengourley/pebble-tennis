@@ -2,6 +2,7 @@
 #define STATE_H
 
 #include <stdbool.h>
+#include "serial.h"
 #include "../deps/list/list.h"
 
 typedef enum {
@@ -21,15 +22,23 @@ typedef struct {
   int opponent_sets;
   bool is_tie_break;
   bool is_complete;
+  bool is_final_set;
   int num_sets;
   int tie_breaks;
   int final_set;
+  int server;
 } State;
+
+typedef enum {
+  PLAYER=0,
+  OPPONENT=1
+} SERVER;
 
 typedef struct {
   int num_sets;
   int tie_breaks;
   int final_set;
+  int first_server;
 } Settings;
 
 typedef enum {
@@ -39,7 +48,7 @@ typedef enum {
 
 typedef enum {
   FINAL_SET_SIX_ALL_TIE_BREAK=0,
-  FINAL_SET__NO_TIE_BREAK=1,
+  FINAL_SET_NO_TIE_BREAK=1,
   FINAL_SET_CHAMPIONSHIP_TIE_BREAK=2
 } FINAL_SET_SETTING;
 

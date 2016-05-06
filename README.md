@@ -2,7 +2,7 @@
 
 ![Header image](https://raw.githubusercontent.com/bengourley/pebble-tennis/master/graphics/header-image.png)
 
-[Available on the Pebble store](https://apps.getpebble.com/en_US/application/572a8209381261f35e00000a)
+[Available on the Pebble store](https://apps.getpebble.com/en_US/application/572a8209381261f35e00000a).
 
 Built by a tennis player for tennis players. Keep track of the score in your tennis matches with simple controls and a clean, uncluttered interface.
 
@@ -39,6 +39,6 @@ Copyright (c) 2016, Ben Gourley
 All rights reserved.
 
 I love open source software which is why I've developed this app in the open. The
-code is released with the [BSD 3-clause](/blob/master/LICENSE.md) open source license,
+code is released with the [BSD 3-clause](/LICENSE.md) open source license,
 which effectively means "do with this what you like, but don't use my name to endorse
 any derivative works without my permission".

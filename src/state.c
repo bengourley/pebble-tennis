@@ -172,6 +172,7 @@ void increment_game(State *s, int *scorer_games, int *non_scorer_games, int *sco
 
 void increment_set(State *s, int *scorer_sets, int *non_scorer_sets) {
   *scorer_sets = *scorer_sets + 1;
+  s->is_final_set = *scorer_sets + *non_scorer_sets == s->num_sets - 1;
   if (*scorer_sets > s->num_sets - *scorer_sets) s->is_complete = true;
 }
 

@@ -16,10 +16,10 @@ static void discard() {
   menu_window_push();
 }
 
-static void save() {
-  save_match(serial);
-  window_stack_pop_all(true);
-}
+// static void save() {
+//   save_match(serial);
+//   window_stack_pop_all(true);
+// }
 
 static void window_load(Window *window) {
 

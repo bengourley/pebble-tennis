@@ -225,12 +225,27 @@ static void window_load(Window *window) {
 }
 
 static void window_unload(Window *window) {
+
+  free(serial);
+
+  text_layer_destroy(sets_label);
+  text_layer_destroy(games_label);
+  text_layer_destroy(player_score);
+  text_layer_destroy(opponent_score);
+  text_layer_destroy(player_games);
+  text_layer_destroy(opponent_games);
+  text_layer_destroy(player_sets);
+  text_layer_destroy(opponent_sets);
+
   layer_destroy(layout_layer);
   layout_layer = NULL;
+
   layer_destroy(server_marker_layer);
   server_marker_layer = NULL;
+
   window_destroy(window);
   s_main_window = NULL;
+
 }
 
 void match_window_push(Settings *s, list_t *srl) {

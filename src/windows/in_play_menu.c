@@ -52,6 +52,7 @@ static void window_load(Window *window) {
 }
 
 static void window_unload(Window *window) {
+  simple_menu_layer_destroy(in_play_menu_layer);
   window_destroy(window);
   s_main_window = NULL;
 }

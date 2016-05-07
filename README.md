@@ -2,7 +2,7 @@
 
 ![Header image](https://raw.githubusercontent.com/bengourley/pebble-tennis/master/graphics/header-image.png)
 
-[Available on the Pebble store](https://apps.getpebble.com/en_US/application/572a8209381261f35e00000a).
+[![Available on the Pebble store](http://pblweb.com/badge/572a8209381261f35e00000a/orange/small)](https://apps.getpebble.com/en_US/application/572a8209381261f35e00000a)
 
 Built by a tennis player for tennis players. Keep track of the score in your tennis matches with simple controls and a clean, uncluttered interface.
 

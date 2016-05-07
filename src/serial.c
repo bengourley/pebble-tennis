@@ -1,20 +1,15 @@
 #include <pebble.h>
 #include "serial.h"
 
-list_t *serial_new() {
-  return list_new();
-}
+static const char OPPONENT_SCORE = 'O';
+static const char PLAYER_SCORE = 'P';
 
 void add_opponent_score(list_t *serial) {
-  char *c = (char *) malloc(sizeof(char));
-  *c = OPPONENT_SCORE;
-  list_rpush(serial, list_node_new((void *) c));
+  list_rpush(serial, list_node_new((void *) &OPPONENT_SCORE));
 }
 
 void add_player_score(list_t *serial) {
-  char *c = (char *) malloc(sizeof(char));
-  *c = PLAYER_SCORE;
-  list_rpush(serial, list_node_new((void *) c));
+  list_rpush(serial, list_node_new((void *) &PLAYER_SCORE));
 }
 
 void undo(list_t *serial) {

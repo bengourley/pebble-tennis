@@ -2,6 +2,9 @@
 #include "state.h"
 #include "../deps/list/list.h"
 
+static const char OPPONENT_SCORE = 'O';
+static const char PLAYER_SCORE = 'P';
+
 State state_new(Settings *settings) {
   return (State)
     { .player_score = 0
@@ -29,7 +32,7 @@ State compute_state(list_t *serial, Settings *settings) {
   return state;
 }
 
-State *next_state(State *s, char *point) {
+void next_state(State *s, char *point) {
 
   bool is_player_score = *point == PLAYER_SCORE;
   int *scorer = is_player_score ? &s->player_score : &s->opponent_score;
@@ -40,8 +43,6 @@ State *next_state(State *s, char *point) {
   int *non_scorer_sets = is_player_score ? &s->opponent_sets : &s->player_sets;
 
   increment_point(s, scorer, non_scorer, scorer_games, non_scorer_games, scorer_sets, non_scorer_sets);
-
-  return s;
 
 }
 

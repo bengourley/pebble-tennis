@@ -62,7 +62,7 @@ void load_match(list_t *serial) {
   int len = persist_read_int(SERIALISED_MATCH_SIZE);
   uint8_t buffer[len / 8];
   persist_read_data(SERIALISED_MATCH, buffer, len);
-  serial = serial_new();
+  serial = list_new();
   APP_LOG(APP_LOG_LEVEL_INFO, "read len %d", len);
   for (int i = 0; i < len; i++) {
     for (int z = 128; z > 0; z >>= 1) {

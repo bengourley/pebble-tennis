@@ -226,7 +226,7 @@ static void window_load(Window *window) {
 
 static void window_unload(Window *window) {
 
-  free(serial);
+  list_destroy(serial);
 
   text_layer_destroy(sets_label);
   text_layer_destroy(games_label);

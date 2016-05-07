@@ -10,12 +10,7 @@ static SimpleMenuItem main_menu_item_options[4];
 static const char *final_set_options[] = { "Tie break at 6-6", "No tie break", "Championship tie break" };
 static const char *switch_options[] = { "Yes", "No" };
 
-static Settings settings =
-  { .num_sets = 3
-  , .tie_breaks = YES
-  , .final_set = FINAL_SET_SIX_ALL_TIE_BREAK
-  , .first_server = PLAYER
-  };
+static Settings settings;
 
 void toggle_switch_setting(int *setting) {
   *setting ^= 1;
@@ -62,7 +57,7 @@ void cycle_tie_breaks_setting() {
 
 void start_match() {
   window_stack_pop(false);
-  match_window_push(&settings, serial_new());
+  match_window_push(&settings, list_new());
   save_settings(&settings);
 }
 
@@ -70,6 +65,13 @@ static void window_load(Window *window) {
 
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_bounds(window_layer);
+
+  settings = (Settings)
+    { .num_sets = 3
+    , .tie_breaks = YES
+    , .final_set = FINAL_SET_SIX_ALL_TIE_BREAK
+    , .first_server = PLAYER
+    };
 
   load_settings(&settings);
 

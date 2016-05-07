@@ -53,7 +53,7 @@ typedef enum {
 } FINAL_SET_SETTING;
 
 State compute_state(list_t *serial, Settings* settings);
-State *next_state(State *s, char *point);
+void next_state(State *s, char *point);
 void debug_state(State *s);
 void increment_point(State *s, int *scorer, int *non_scorer, int *scorer_games, int *non_scorer_games, int *scorer_sets, int *non_scorer_sets);
 void increment_game(State *s, int *scorer_games, int *non_scorer_games, int *scorer_sets, int *non_scorer_sets);

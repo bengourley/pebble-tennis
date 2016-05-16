@@ -6,6 +6,17 @@ static const char OPPONENT_SCORE = 'O';
 static const char PLAYER_SCORE = 'P';
 
 State state_new(Settings *settings) {
+
+  // Allocate memory for tracking previous sets
+  int **completed_sets = (int **) malloc(settings->num_sets * sizeof(int*));
+  for (int i = 0; i < settings->num_sets; i++) {
+    completed_sets[i] = (int *) malloc(4 * sizeof(int*));
+    completed_sets[i][0] = 0;
+    completed_sets[i][1] = 0;
+    completed_sets[i][2] = 0;
+    completed_sets[i][3] = 0;
+  }
+
   return (State)
     { .player_score = 0
     , .opponent_score = 0
@@ -20,7 +31,13 @@ State state_new(Settings *settings) {
     , .tie_breaks = settings->tie_breaks
     , .final_set = settings->final_set
     , .server = settings->first_server
+    , .completed_sets = completed_sets
     };
+}
+
+void state_destroy(State *s) {
+  for (int i = 0; i < s->num_sets; i++) free(s->completed_sets[i]);
+  free(s->completed_sets);
 }
 
 State compute_state(list_t *serial, Settings *settings) {
@@ -42,7 +59,7 @@ void next_state(State *s, char *point) {
   int *scorer_sets = is_player_score ? &s->player_sets : &s->opponent_sets;
   int *non_scorer_sets = is_player_score ? &s->opponent_sets : &s->player_sets;
 
-  increment_point(s, scorer, non_scorer, scorer_games, non_scorer_games, scorer_sets, non_scorer_sets);
+  increment_point(s, is_player_score, scorer, non_scorer, scorer_games, non_scorer_games, scorer_sets, non_scorer_sets);
 
 }
 
@@ -55,7 +72,7 @@ void toggle_server(State *s) {
   }
 }
 
-void increment_point(State *s, int *scorer, int *non_scorer, int *scorer_games, int *non_scorer_games, int *scorer_sets, int *non_scorer_sets) {
+void increment_point(State *s, bool is_player_score, int *scorer, int *non_scorer, int *scorer_games, int *non_scorer_games, int *scorer_sets, int *non_scorer_sets) {
 
   if (s->is_tie_break) {
 
@@ -70,9 +87,15 @@ void increment_point(State *s, int *scorer, int *non_scorer, int *scorer_games, 
       *scorer = *scorer + 1;
       return;
     } else {
+      // track the result of the tie break
+      *scorer = *scorer + 1;
+      int current_set = s->player_sets + s->opponent_sets;
+      s->completed_sets[current_set][is_player_score ? 2 : 3] = *scorer;
+      s->completed_sets[current_set][is_player_score ? 3 : 2] = *non_scorer;
+
       *scorer = LOVE;
       *non_scorer = LOVE;
-      increment_game(s, scorer_games, non_scorer_games, scorer_sets, non_scorer_sets);
+      increment_game(s, is_player_score, scorer_games, non_scorer_games, scorer_sets, non_scorer_sets);
       return;
     }
 
@@ -89,9 +112,16 @@ void increment_point(State *s, int *scorer, int *non_scorer, int *scorer_games, 
       *scorer = *scorer + 1;
       return;
     } else {
+
+      // track the result of the tie break
+      *scorer = *scorer + 1;
+      int current_set = s->player_sets + s->opponent_sets;
+      s->completed_sets[current_set][is_player_score ? 2 : 3] = *scorer;
+      s->completed_sets[current_set][is_player_score ? 3 : 2] = *non_scorer;
+
       *scorer = LOVE;
       *non_scorer = LOVE;
-      increment_game(s, scorer_games, non_scorer_games, scorer_sets, non_scorer_sets);
+      increment_game(s, is_player_score, scorer_games, non_scorer_games, scorer_sets, non_scorer_sets);
       return;
     }
 
@@ -109,13 +139,13 @@ void increment_point(State *s, int *scorer, int *non_scorer, int *scorer_games, 
         } else {
           *scorer = LOVE;
           *non_scorer = LOVE;
-          increment_game(s, scorer_games, non_scorer_games, scorer_sets, non_scorer_sets);
+          increment_game(s, is_player_score, scorer_games, non_scorer_games, scorer_sets, non_scorer_sets);
         }
         break;
       case AD:
         *scorer = LOVE;
         *non_scorer = LOVE;
-        increment_game(s, scorer_games, non_scorer_games, scorer_sets, non_scorer_sets);
+        increment_game(s, is_player_score, scorer_games, non_scorer_games, scorer_sets, non_scorer_sets);
         break;
     }
 
@@ -123,15 +153,13 @@ void increment_point(State *s, int *scorer, int *non_scorer, int *scorer_games, 
 
 }
 
-void increment_game(State *s, int *scorer_games, int *non_scorer_games, int *scorer_sets, int *non_scorer_sets) {
+void increment_game(State *s, bool is_player_score, int *scorer_games, int *non_scorer_games, int *scorer_sets, int *non_scorer_sets) {
 
   toggle_server(s);
 
   // If this was a championship tie break, one game wins it
   if (s->is_final_set && s->final_set == FINAL_SET_CHAMPIONSHIP_TIE_BREAK) {
-    *scorer_games = 0;
-    *non_scorer_games = 0;
-    increment_set(s, scorer_sets, non_scorer_sets);
+    increment_set(s, is_player_score, scorer_games, non_scorer_games, scorer_sets, non_scorer_sets);
     return;
   }
 
@@ -140,9 +168,7 @@ void increment_game(State *s, int *scorer_games, int *non_scorer_games, int *sco
   if (s->tie_breaks == YES || (s->is_final_set && s->final_set == FINAL_SET_SIX_ALL_TIE_BREAK)) {
     if (s->is_tie_break) {
       s->is_tie_break = false;
-      *scorer_games = 0;
-      *non_scorer_games = 0;
-      increment_set(s, scorer_sets, non_scorer_sets);
+      increment_set(s, is_player_score, scorer_games, non_scorer_games, scorer_sets, non_scorer_sets);
     } else if (*scorer_games < 5) {
       *scorer_games = *scorer_games + 1;
     } else if (*scorer_games - *non_scorer_games < 1) {
@@ -151,9 +177,7 @@ void increment_game(State *s, int *scorer_games, int *non_scorer_games, int *sco
         s->is_tie_break = true;
       }
     } else {
-      *scorer_games = 0;
-      *non_scorer_games = 0;
-      increment_set(s, scorer_sets, non_scorer_sets);
+      increment_set(s, is_player_score, scorer_games, non_scorer_games, scorer_sets, non_scorer_sets);
     }
     return;
   }
@@ -164,14 +188,18 @@ void increment_game(State *s, int *scorer_games, int *non_scorer_games, int *sco
   } else if (*scorer_games - *non_scorer_games < 1) {
     *scorer_games = *scorer_games + 1;
   } else {
-    *scorer_games = 0;
-    *non_scorer_games = 0;
-    increment_set(s, scorer_sets, non_scorer_sets);
+    increment_set(s, is_player_score, scorer_games, non_scorer_games, scorer_sets, non_scorer_sets);
   }
 
 }
 
-void increment_set(State *s, int *scorer_sets, int *non_scorer_sets) {
+void increment_set(State *s, bool is_player_score, int *scorer_games, int *non_scorer_games, int *scorer_sets, int *non_scorer_sets) {
+  *scorer_games = *scorer_games + 1;
+  int current_set = s->player_sets + s->opponent_sets;
+  s->completed_sets[current_set][is_player_score ? 0 : 1] = *scorer_games;
+  s->completed_sets[current_set][is_player_score ? 1 : 0] = *non_scorer_games;
+  *scorer_games = 0;
+  *non_scorer_games = 0;
   *scorer_sets = *scorer_sets + 1;
   s->is_final_set = *scorer_sets + *non_scorer_sets == s->num_sets - 1;
   if (*scorer_sets > s->num_sets - *scorer_sets) s->is_complete = true;
@@ -208,6 +236,13 @@ void debug_state(State *s) {
     snprintf(player_score, 3, "%d", s->player_score);
     snprintf(opponent_score, 3, "%d", s->opponent_score);
 
+  }
+
+  for (int i = 0; i < s->num_sets; i++) {
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Set %d: %d-%d", i, s->completed_sets[i][0], s->completed_sets[i][1]);
+    if (s->completed_sets[i][2] != 0 || s->completed_sets[i][3] != 0) {
+      APP_LOG(APP_LOG_LEVEL_DEBUG, "Tie break: %d-%d", s->completed_sets[i][2], s->completed_sets[i][3]);
+    }
   }
 
   APP_LOG(APP_LOG_LEVEL_DEBUG

@@ -27,6 +27,7 @@ typedef struct {
   int tie_breaks;
   int final_set;
   int server;
+  int **completed_sets;
 } State;
 
 typedef enum {
@@ -53,10 +54,11 @@ typedef enum {
 } FINAL_SET_SETTING;
 
 State compute_state(list_t *serial, Settings* settings);
+void state_destroy(State *state);
 void next_state(State *s, char *point);
 void debug_state(State *s);
-void increment_point(State *s, int *scorer, int *non_scorer, int *scorer_games, int *non_scorer_games, int *scorer_sets, int *non_scorer_sets);
-void increment_game(State *s, int *scorer_games, int *non_scorer_games, int *scorer_sets, int *non_scorer_sets);
-void increment_set(State *s, int *scorer_sets, int *non_scorer_sets);
+void increment_point(State *s, bool is_player_score, int *scorer, int *non_scorer, int *scorer_games, int *non_scorer_games, int *scorer_sets, int *non_scorer_sets);
+void increment_game(State *s, bool is_player_score, int *scorer_games, int *non_scorer_games, int *scorer_sets, int *non_scorer_sets);
+void increment_set(State *s, bool is_player_score, int *scorer_games, int *non_scorer_games, int *scorer_sets, int *non_scorer_sets);
 
 #endif

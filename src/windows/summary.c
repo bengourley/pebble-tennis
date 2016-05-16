@@ -41,6 +41,7 @@ static void click_config_provider(void *context) {
 static void window_unload(Window *window) {
   text_layer_destroy(result);
   text_layer_destroy(match_score);
+  state_destroy(final_state);
   window_destroy(window);
   s_main_window = NULL;
 }

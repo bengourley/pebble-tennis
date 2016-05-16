@@ -57,6 +57,7 @@ static void render(State *state) {
   display_digit_update(opponent_sets, state->opponent_sets, opponent_sets_str);
   server = state->server;
   draw_server_marker();
+  state_destroy(state);
 }
 
 static void show_summary() {

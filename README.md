@@ -19,15 +19,14 @@ TODO
 ## Features
 
 - Clean interface
-- Service indicator
 - Many match formats supported
 - Infinite undo
 
 ## Roadmap
 
 - More detailed match report when the match has finished
-- Ability to save/resume match state with persistent storage
-- Support any missing match formats
+- Support any missing match 
+- Integration with Pebble Health API
 
 ## License
 

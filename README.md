@@ -1,16 +1,12 @@
-# Pebble Tennis
+# Pebble Badminton
 
-![Header image](https://raw.githubusercontent.com/bengourley/pebble-tennis/master/graphics/header-image.png)
+Built by a Badminton player for Badminton players. Keep track of the score in your Badminton matches with simple controls and a clean, uncluttered interface.
 
-[![Available on the Pebble store](http://pblweb.com/badge/572a8209381261f35e00000a/orange/small)](https://apps.getpebble.com/en_US/application/572a8209381261f35e00000a)
-
-Built by a tennis player for tennis players. Keep track of the score in your tennis matches with simple controls and a clean, uncluttered interface.
-
-Match formats are easily configured inside the app and it defaults to the settings you last used. If your yours isn't configurable, let me know because I want to support all commonly played formats.
+Match formats are easily configured inside the app and it defaults to the settings you last used. If yours isn't configurable, let me know because I want to support all commonly played formats.
 
 ## Screenshots
 
-![Match screenshot](https://raw.githubusercontent.com/bengourley/pebble-tennis/master/graphics/screenshot-match.png) ![Menu screenhot](https://raw.githubusercontent.com/bengourley/pebble-tennis/master/graphics/screenshot-menu.png) ![Result screenshot](https://raw.githubusercontent.com/bengourley/pebble-tennis/master/graphics/screenshot-result.png)
+TODO
 
 ## Instructions
 
@@ -35,7 +31,7 @@ Match formats are easily configured inside the app and it defaults to the settin
 
 ## License
 
-Copyright (c) 2016, Ben Gourley
+Copyright (c) 2016, François Bochatay
 All rights reserved.
 
 I love open source software which is why I've developed this app in the open. The

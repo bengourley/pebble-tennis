@@ -164,6 +164,7 @@ static void window_load(Window *window) {
   player_sets = text_layer_create(GRect(13, -19 + (bounds.size.h * 0.75), 20, 28));
   text_layer_set_text(player_sets, "0");
   text_layer_set_font(player_sets, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
+  text_layer_set_background_color(player_sets, COLOR_FALLBACK(GColorPastelYellow, GColorWhite));
   text_layer_set_text_alignment(player_sets, GTextAlignmentCenter);
   layer_add_child(window_layer, (Layer *) player_sets);
 
@@ -171,6 +172,7 @@ static void window_load(Window *window) {
   opponent_sets = text_layer_create(GRect(13, -19 + (bounds.size.h / 4), 20, 28));
   text_layer_set_text(opponent_sets, "0");
   text_layer_set_font(opponent_sets, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
+  text_layer_set_background_color(opponent_sets, COLOR_FALLBACK(GColorPastelYellow, GColorWhite));
   text_layer_set_text_alignment(opponent_sets, GTextAlignmentCenter);
   layer_add_child(window_layer, (Layer *) opponent_sets);
 
@@ -178,6 +180,7 @@ static void window_load(Window *window) {
   player_games = text_layer_create(GRect(42, -19 + (bounds.size.h * 0.75), 30, 28));
   text_layer_set_text(player_games, "0");
   text_layer_set_font(player_games, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
+  text_layer_set_background_color(player_games, COLOR_FALLBACK(GColorPastelYellow, GColorWhite));
   text_layer_set_text_alignment(player_games, GTextAlignmentCenter);
   layer_add_child(window_layer, (Layer *) player_games);
 
@@ -185,6 +188,7 @@ static void window_load(Window *window) {
   opponent_games = text_layer_create(GRect(42, -19 + (bounds.size.h / 4), 30, 28));
   text_layer_set_text(opponent_games, "0");
   text_layer_set_font(opponent_games, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
+  text_layer_set_background_color(opponent_games, COLOR_FALLBACK(GColorPastelYellow, GColorWhite));
   text_layer_set_text_alignment(opponent_games, GTextAlignmentCenter);
   layer_add_child(window_layer, (Layer *) opponent_games);
 
@@ -192,6 +196,7 @@ static void window_load(Window *window) {
   player_score = text_layer_create(GRect(bounds.size.w / 2, 14 + bounds.size.h / 2, -10 + (bounds.size.w / 2), bounds.size.h / 2));
   text_layer_set_text(player_score, "0");
   text_layer_set_font(player_score, fonts_get_system_font(FONT_KEY_BITHAM_42_BOLD));
+  text_layer_set_background_color(player_score, COLOR_FALLBACK(GColorPastelYellow, GColorWhite));
   text_layer_set_text_alignment(player_score, GTextAlignmentCenter);
   layer_add_child(window_layer, (Layer *) player_score);
 
@@ -199,6 +204,7 @@ static void window_load(Window *window) {
   opponent_score = text_layer_create(GRect(bounds.size.w / 2, 14, -10 + (bounds.size.w / 2), bounds.size.h / 2));
   text_layer_set_text(opponent_score, "0");
   text_layer_set_font(opponent_score, fonts_get_system_font(FONT_KEY_BITHAM_42_BOLD));
+  text_layer_set_background_color(opponent_score, COLOR_FALLBACK(GColorPastelYellow, GColorWhite));
   text_layer_set_text_alignment(opponent_score, GTextAlignmentCenter);
   layer_add_child(window_layer, (Layer *) opponent_score);
 
@@ -206,7 +212,7 @@ static void window_load(Window *window) {
 
   // Sets label
   sets_label = text_layer_create(GRect(8, -10 + (bounds.size.h / 2), 28, 20));
-  text_layer_set_background_color(sets_label, GColorWhite);
+  text_layer_set_background_color(sets_label, COLOR_FALLBACK(GColorPastelYellow, GColorWhite));
   text_layer_set_text(sets_label, "SETS");
   text_layer_set_font(sets_label, fonts_get_system_font(FONT_KEY_GOTHIC_14));
   text_layer_set_text_alignment(sets_label, GTextAlignmentCenter);
@@ -214,7 +220,7 @@ static void window_load(Window *window) {
 
   // Games label
   games_label = text_layer_create(GRect(38, -10 + (bounds.size.h / 2), 42, 20));
-  text_layer_set_background_color(games_label, GColorWhite);
+  text_layer_set_background_color(games_label, COLOR_FALLBACK(GColorPastelYellow, GColorWhite));
   text_layer_set_text(games_label, "GAMES");
   text_layer_set_font(games_label, fonts_get_system_font(FONT_KEY_GOTHIC_14));
   text_layer_set_text_alignment(games_label, GTextAlignmentCenter);
@@ -258,6 +264,7 @@ void match_window_push(Settings *s, list_t *srl) {
       .unload = window_unload
     });
     window_set_click_config_provider(s_main_window, click_config_provider);
+    window_set_background_color(s_main_window, COLOR_FALLBACK(GColorPastelYellow, GColorWhite));
   }
   window_stack_push(s_main_window, true);
 }

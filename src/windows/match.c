@@ -12,11 +12,6 @@ static char player_points_str[4];
 static TextLayer *opponent_score;
 static char opponent_points_str[4];
 
-static TextLayer *player_games;
-static char player_games_str[2];
-static TextLayer *opponent_games;
-static char opponent_games_str[2];
-
 static TextLayer *player_sets;
 static char player_sets_str[2];
 static TextLayer *opponent_sets;
@@ -27,33 +22,15 @@ static Layer *server_marker_layer;
 
 static int server;
 
-static void display_score_update(TextLayer *t, char * str, int s, bool is_tie_break) {
-  if (is_tie_break) {
-    snprintf(str, 3, "%d", s);
-    text_layer_set_text(t, str);
-  } else {
-    switch (s) {
-      case LOVE: text_layer_set_text(t, "0"); break;
-      case FIFTEEN: text_layer_set_text(t, "15"); break;
-      case THIRTY: text_layer_set_text(t, "30"); break;
-      case FORTY: text_layer_set_text(t, "40"); break;
-      case AD: text_layer_set_text(t, "A"); break;
-    }
-  }
-}
-
 static void display_digit_update(TextLayer *t, int s, char *str) {
   snprintf(str, sizeof(str), "%d", s);
   text_layer_set_text(t, str);
 }
 
 static void render(State *state) {
-  bool is_tie_break = state->is_tie_break || (state->is_final_set && state->final_set == FINAL_SET_CHAMPIONSHIP_TIE_BREAK);
-  display_score_update(player_score, player_points_str, state->player_score, is_tie_break);
-  display_digit_update(player_games, state->player_games, player_games_str);
+  display_digit_update(player_score, state->player_score, player_points_str);
   display_digit_update(player_sets, state->player_sets, player_sets_str);
-  display_score_update(opponent_score, opponent_points_str, state->opponent_score, is_tie_break);
-  display_digit_update(opponent_games, state->opponent_games, opponent_games_str);
+  display_digit_update(opponent_score, state->opponent_score, opponent_points_str);
   display_digit_update(opponent_sets, state->opponent_sets, opponent_sets_str);
   server = state->server;
   draw_server_marker();
@@ -173,21 +150,7 @@ static void window_load(Window *window) {
   text_layer_set_font(opponent_sets, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
   text_layer_set_text_alignment(opponent_sets, GTextAlignmentCenter);
   layer_add_child(window_layer, (Layer *) opponent_sets);
-
-  // Player games
-  player_games = text_layer_create(GRect(42, -19 + (bounds.size.h * 0.75), 30, 28));
-  text_layer_set_text(player_games, "0");
-  text_layer_set_font(player_games, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
-  text_layer_set_text_alignment(player_games, GTextAlignmentCenter);
-  layer_add_child(window_layer, (Layer *) player_games);
-
-  // Opponent games
-  opponent_games = text_layer_create(GRect(42, -19 + (bounds.size.h / 4), 30, 28));
-  text_layer_set_text(opponent_games, "0");
-  text_layer_set_font(opponent_games, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
-  text_layer_set_text_alignment(opponent_games, GTextAlignmentCenter);
-  layer_add_child(window_layer, (Layer *) opponent_games);
-
+  
   // Player score
   player_score = text_layer_create(GRect(bounds.size.w / 2, 14 + bounds.size.h / 2, -10 + (bounds.size.w / 2), bounds.size.h / 2));
   text_layer_set_text(player_score, "0");
@@ -212,14 +175,6 @@ static void window_load(Window *window) {
   text_layer_set_text_alignment(sets_label, GTextAlignmentCenter);
   layer_add_child(window_layer, (Layer *) sets_label);
 
-  // Games label
-  games_label = text_layer_create(GRect(38, -10 + (bounds.size.h / 2), 42, 20));
-  text_layer_set_background_color(games_label, GColorWhite);
-  text_layer_set_text(games_label, "GAMES");
-  text_layer_set_font(games_label, fonts_get_system_font(FONT_KEY_GOTHIC_14));
-  text_layer_set_text_alignment(games_label, GTextAlignmentCenter);
-  layer_add_child(window_layer, (Layer *) games_label);
-
   render(&state);
 
 }
@@ -232,8 +187,6 @@ static void window_unload(Window *window) {
   text_layer_destroy(games_label);
   text_layer_destroy(player_score);
   text_layer_destroy(opponent_score);
-  text_layer_destroy(player_games);
-  text_layer_destroy(opponent_games);
   text_layer_destroy(player_sets);
   text_layer_destroy(opponent_sets);
 

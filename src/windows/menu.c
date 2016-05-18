@@ -68,8 +68,6 @@ static void window_load(Window *window) {
 
   settings = (Settings)
     { .num_sets = 3
-    , .tie_breaks = YES
-    , .final_set = FINAL_SET_SIX_ALL_TIE_BREAK
     , .first_server = PLAYER
     };
 
@@ -88,25 +86,13 @@ static void window_load(Window *window) {
   main_menu_sections[1] = (SimpleMenuSection) {
     .title = "Match Settings",
     .items = main_menu_item_options,
-    .num_items = 3
+    .num_items = 1
   };
 
   main_menu_item_options[0] = (SimpleMenuItem) {
     .title = "Sets",
     .subtitle = num_sets_to_string(settings.num_sets),
     .callback = cycle_match_type
-  };
-
-  main_menu_item_options[1] = (SimpleMenuItem) {
-    .title = "Tie Breaks",
-    .subtitle = switch_options[settings.tie_breaks],
-    .callback = cycle_tie_breaks_setting
-  };
-
-  main_menu_item_options[2] = (SimpleMenuItem) {
-    .title = "Final Set",
-    .subtitle = final_set_options[settings.final_set],
-    .callback = cycle_final_set_setting
   };
 
   main_menu_layer = simple_menu_layer_create(bounds, window, main_menu_sections, 2, NULL);

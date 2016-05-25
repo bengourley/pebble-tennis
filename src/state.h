@@ -14,8 +14,10 @@ typedef enum {
 } SCORE_NAMES;
 
 typedef struct {
-  int player_score;
-  int opponent_score;
+
+  // Match state
+  int player_points;
+  int opponent_points;
   int player_games;
   int opponent_games;
   int player_sets;
@@ -23,12 +25,33 @@ typedef struct {
   bool is_tie_break;
   bool is_complete;
   bool is_final_set;
+
+  // Settings
   int num_sets;
   int tie_breaks;
   int final_set;
   int server;
+
+  // Collected stats
+  int match_start_time;
+  int match_end_time;
+  int player_total_points;
+  int opponent_total_points;
+  int player_break_points_faced;
+  int player_break_points_conceded;
+  int opponent_break_points_faced;
+  int opponent_break_points_conceded;
   int **completed_sets;
+
 } State;
+
+typedef struct {
+  int *points;
+  int *games;
+  int *sets;
+  bool is_serving;
+  bool is_player;
+} Player;
 
 typedef enum {
   PLAYER=0,
@@ -53,12 +76,13 @@ typedef enum {
   FINAL_SET_CHAMPIONSHIP_TIE_BREAK=2
 } FINAL_SET_SETTING;
 
-State compute_state(list_t *serial, Settings* settings);
+State compute_state(list_t *serial, Settings *settings);
+State state_new(Settings *settings);
 void state_destroy(State *state);
-void next_state(State *s, char *point);
+void next_state(State *s, Point *point);
 void debug_state(State *s);
-void increment_point(State *s, bool is_player_score, int *scorer, int *non_scorer, int *scorer_games, int *non_scorer_games, int *scorer_sets, int *non_scorer_sets);
-void increment_game(State *s, bool is_player_score, int *scorer_games, int *non_scorer_games, int *scorer_sets, int *non_scorer_sets);
-void increment_set(State *s, bool is_player_score, int *scorer_games, int *non_scorer_games, int *scorer_sets, int *non_scorer_sets);
+void increment_point(State *s, Player *scorer, Player *non_scorer);
+void increment_game(State *s, Player *scorer, Player *non_scorer);
+void increment_set(State *s, Player *scorer, Player *non_scorer);
 
 #endif

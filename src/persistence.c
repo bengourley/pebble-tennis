@@ -62,16 +62,16 @@ void load_match(list_t *serial) {
   int len = persist_read_int(SERIALISED_MATCH_SIZE);
   uint8_t buffer[len / 8];
   persist_read_data(SERIALISED_MATCH, buffer, len);
-  serial = list_new();
+  serial = serial_new();
   APP_LOG(APP_LOG_LEVEL_INFO, "read len %d", len);
   for (int i = 0; i < len; i++) {
     for (int z = 128; z > 0; z >>= 1) {
       APP_LOG(APP_LOG_LEVEL_INFO, "buffer[i] %d", buffer[i]);
       APP_LOG(APP_LOG_LEVEL_INFO, "is 1 %d", (buffer[i] & z) == z);
       if ((buffer[i] & z) == z) {
-        add_player_score(serial);
+        add_player_points(serial);
       } else {
-        add_opponent_score(serial);
+        add_opponent_points(serial);
       }
     }
   }

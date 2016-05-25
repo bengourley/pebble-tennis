@@ -7,9 +7,9 @@ static Settings settings;
 static TextLayer *sets_label;
 static TextLayer *games_label;
 
-static TextLayer *player_score;
+static TextLayer *player_points;
 static char player_points_str[4];
-static TextLayer *opponent_score;
+static TextLayer *opponent_points;
 static char opponent_points_str[4];
 
 static TextLayer *player_games;
@@ -49,10 +49,10 @@ static void display_digit_update(TextLayer *t, int s, char *str) {
 
 static void render(State *state) {
   bool is_tie_break = state->is_tie_break || (state->is_final_set && state->final_set == FINAL_SET_CHAMPIONSHIP_TIE_BREAK);
-  display_score_update(player_score, player_points_str, state->player_score, is_tie_break);
+  display_score_update(player_points, player_points_str, state->player_points, is_tie_break);
   display_digit_update(player_games, state->player_games, player_games_str);
   display_digit_update(player_sets, state->player_sets, player_sets_str);
-  display_score_update(opponent_score, opponent_points_str, state->opponent_score, is_tie_break);
+  display_score_update(opponent_points, opponent_points_str, state->opponent_points, is_tie_break);
   display_digit_update(opponent_games, state->opponent_games, opponent_games_str);
   display_digit_update(opponent_sets, state->opponent_sets, opponent_sets_str);
   server = state->server;
@@ -63,11 +63,11 @@ static void render(State *state) {
 static void show_summary() {
   window_stack_pop_all(true);
   State state = compute_state(serial, &settings);
-  summary_window_push(&state);
+  summary_window_push(state);
 }
 
-static void opponent_score_click_handler(ClickRecognizerRef recognizer, void *context) {
-  add_opponent_score(serial);
+static void opponent_point_click_handler(ClickRecognizerRef recognizer, void *context) {
+  add_opponent_points(serial);
   State state = compute_state(serial, &settings);
   debug_state(&state);
   render(&state);
@@ -77,8 +77,8 @@ static void opponent_score_click_handler(ClickRecognizerRef recognizer, void *co
   }
 }
 
-static void player_score_click_handler(ClickRecognizerRef recognizer, void *context) {
-  add_player_score(serial);
+static void player_point_click_handler(ClickRecognizerRef recognizer, void *context) {
+  add_player_points(serial);
   State state = compute_state(serial, &settings);
   debug_state(&state);
   render(&state);
@@ -110,8 +110,8 @@ static void menu_click_handler(ClickRecognizerRef recognize, void *context) {
 }
 
 static void click_config_provider(void *context) {
-  window_single_click_subscribe(BUTTON_ID_UP, opponent_score_click_handler);
-  window_single_click_subscribe(BUTTON_ID_DOWN, player_score_click_handler);
+  window_single_click_subscribe(BUTTON_ID_UP, opponent_point_click_handler);
+  window_single_click_subscribe(BUTTON_ID_DOWN, player_point_click_handler);
   window_single_click_subscribe(BUTTON_ID_SELECT, undo_click_handler);
   window_single_click_subscribe(BUTTON_ID_BACK, menu_click_handler);
 }
@@ -190,18 +190,18 @@ static void window_load(Window *window) {
   layer_add_child(window_layer, (Layer *) opponent_games);
 
   // Player score
-  player_score = text_layer_create(GRect(bounds.size.w / 2, 14 + bounds.size.h / 2, -10 + (bounds.size.w / 2), bounds.size.h / 2));
-  text_layer_set_text(player_score, "0");
-  text_layer_set_font(player_score, fonts_get_system_font(FONT_KEY_BITHAM_42_BOLD));
-  text_layer_set_text_alignment(player_score, GTextAlignmentCenter);
-  layer_add_child(window_layer, (Layer *) player_score);
+  player_points = text_layer_create(GRect(bounds.size.w / 2, 14 + bounds.size.h / 2, -10 + (bounds.size.w / 2), bounds.size.h / 2));
+  text_layer_set_text(player_points, "0");
+  text_layer_set_font(player_points, fonts_get_system_font(FONT_KEY_BITHAM_42_BOLD));
+  text_layer_set_text_alignment(player_points, GTextAlignmentCenter);
+  layer_add_child(window_layer, (Layer *) player_points);
 
   // Opponent score
-  opponent_score = text_layer_create(GRect(bounds.size.w / 2, 14, -10 + (bounds.size.w / 2), bounds.size.h / 2));
-  text_layer_set_text(opponent_score, "0");
-  text_layer_set_font(opponent_score, fonts_get_system_font(FONT_KEY_BITHAM_42_BOLD));
-  text_layer_set_text_alignment(opponent_score, GTextAlignmentCenter);
-  layer_add_child(window_layer, (Layer *) opponent_score);
+  opponent_points = text_layer_create(GRect(bounds.size.w / 2, 14, -10 + (bounds.size.w / 2), bounds.size.h / 2));
+  text_layer_set_text(opponent_points, "0");
+  text_layer_set_font(opponent_points, fonts_get_system_font(FONT_KEY_BITHAM_42_BOLD));
+  text_layer_set_text_alignment(opponent_points, GTextAlignmentCenter);
+  layer_add_child(window_layer, (Layer *) opponent_points);
 
   draw_layout();
 
@@ -227,12 +227,12 @@ static void window_load(Window *window) {
 
 static void window_unload(Window *window) {
 
-  list_destroy(serial);
+  serial_destroy(serial);
 
   text_layer_destroy(sets_label);
   text_layer_destroy(games_label);
-  text_layer_destroy(player_score);
-  text_layer_destroy(opponent_score);
+  text_layer_destroy(player_points);
+  text_layer_destroy(opponent_points);
   text_layer_destroy(player_games);
   text_layer_destroy(opponent_games);
   text_layer_destroy(player_sets);

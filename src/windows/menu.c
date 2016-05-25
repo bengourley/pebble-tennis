@@ -57,7 +57,7 @@ void cycle_tie_breaks_setting() {
 
 void start_match() {
   window_stack_pop(false);
-  match_window_push(&settings, list_new());
+  match_window_push(&settings, serial_new());
   save_settings(&settings);
 }
 

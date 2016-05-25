@@ -10,7 +10,8 @@ Match formats are easily configured inside the app and it defaults to the settin
 
 ## Screenshots
 
-![Match screenshot](https://raw.githubusercontent.com/bengourley/pebble-tennis/master/graphics/screenshot-match.png) ![Menu screenhot](https://raw.githubusercontent.com/bengourley/pebble-tennis/master/graphics/screenshot-menu.png) ![Result screenshot](https://raw.githubusercontent.com/bengourley/pebble-tennis/master/graphics/screenshot-result.png)
+![Match screenshot](https://raw.githubusercontent.com/bengourley/pebble-tennis/master/graphics/screenshot-match.png) ![Menu screenhot](https://raw.githubusercontent.com/bengourley/pebble-tennis/master/graphics/screenshot-menu.png) ![Summary/overview screenshot](https://raw.githubusercontent.com/bengourley/pebble-tennis/master/graphics/screenshot-points.png)![Summary/points screenshot](https://raw.githubusercontent.com/bengourley/pebble-tennis/master/graphics/screenshot-points.png)
+
 
 ## Instructions
 
@@ -26,11 +27,12 @@ Match formats are easily configured inside the app and it defaults to the settin
 - Service indicator
 - Many match formats supported
 - Infinite undo
+- Post-match stats
 
 ## Roadmap
 
-- More detailed match report when the match has finished
 - Ability to save/resume match state with persistent storage
+- Ability to view stats for previously completed matches
 - Support any missing match formats
 
 ## License

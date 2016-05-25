@@ -10,7 +10,7 @@ Match formats are easily configured inside the app and it defaults to the settin
 
 ## Screenshots
 
-![Match screenshot](https://raw.githubusercontent.com/bengourley/pebble-tennis/master/graphics/screenshot-match.png) ![Menu screenhot](https://raw.githubusercontent.com/bengourley/pebble-tennis/master/graphics/screenshot-menu.png) ![Summary/overview screenshot](https://raw.githubusercontent.com/bengourley/pebble-tennis/master/graphics/screenshot-points.png)![Summary/points screenshot](https://raw.githubusercontent.com/bengourley/pebble-tennis/master/graphics/screenshot-points.png)
+![Match screenshot](https://raw.githubusercontent.com/bengourley/pebble-tennis/master/graphics/screenshot-match.png) ![Menu screenhot](https://raw.githubusercontent.com/bengourley/pebble-tennis/master/graphics/screenshot-menu.png) ![Summary/overview screenshot](https://raw.githubusercontent.com/bengourley/pebble-tennis/master/graphics/screenshot-points.png) ![Summary/points screenshot](https://raw.githubusercontent.com/bengourley/pebble-tennis/master/graphics/screenshot-points.png)
 
 
 ## Instructions

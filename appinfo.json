@@ -9,7 +9,16 @@
   "capabilities": [],
   "companyName": "bn@grly.me",
   "enableMultiJS": false,
-  "resources": { "media": [] },
+  "resources": { "media":
+    [
+      {
+        "file": "menu-icon.png",
+        "menuIcon": true,
+        "name": "IMAGE_MENU",
+        "type": "png"
+      }
+    ]
+  },
   "targetPlatforms": [ "aplite", "basalt" ],
   "watchapp": { "watchface": false }
 }

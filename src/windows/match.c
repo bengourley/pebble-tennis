@@ -25,6 +25,8 @@ static char opponent_sets_str[2];
 static Layer *layout_layer;
 static Layer *server_marker_layer;
 
+static StatusBarLayer *status_layer;
+
 static int server;
 
 static void display_score_update(TextLayer *t, char * str, int s, bool is_tie_break) {
@@ -118,8 +120,11 @@ static void click_config_provider(void *context) {
 
 static void layout_update_proc(Layer *layer, GContext *ctx) {
   GRect bounds = layer_get_frame(layer);
+  int available_height = bounds.size.h - STATUS_BAR_LAYER_HEIGHT;
   graphics_context_set_stroke_color(ctx, GColorBlack);
-  graphics_draw_line(ctx, GPoint(2, bounds.size.h / 2), GPoint(bounds.size.w - 2, bounds.size.h / 2));
+  graphics_draw_line(ctx
+    , GPoint(2, STATUS_BAR_LAYER_HEIGHT + (available_height / 2))
+    , GPoint(bounds.size.w - 2,  STATUS_BAR_LAYER_HEIGHT + (available_height / 2)));
 }
 
 static void draw_layout() {
@@ -131,12 +136,13 @@ static void draw_layout() {
 
 static void server_marker_update_proc(Layer *layer, GContext *ctx) {
   GRect bounds = layer_get_frame(layer);
+  int available_height = bounds.size.h - STATUS_BAR_LAYER_HEIGHT;
   graphics_context_set_stroke_color(ctx, GColorBlack);
   graphics_context_set_fill_color(ctx, GColorBlack);
   if (server == PLAYER) {
-    graphics_fill_circle(ctx, GPoint(bounds.size.w - 8, bounds.size.h * 0.75), 3);
+    graphics_fill_circle(ctx, GPoint(bounds.size.w - 8, STATUS_BAR_LAYER_HEIGHT + (available_height * 0.75)), 3);
   } else {
-    graphics_fill_circle(ctx, GPoint(bounds.size.w - 8, bounds.size.h / 4), 3);
+    graphics_fill_circle(ctx, GPoint(bounds.size.w - 8, STATUS_BAR_LAYER_HEIGHT + (available_height / 4)), 3);
   }
 }
 
@@ -161,43 +167,45 @@ static void window_load(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_frame(window_layer);
 
+  int available_height = bounds.size.h - STATUS_BAR_LAYER_HEIGHT;
+
   // Player sets
-  player_sets = text_layer_create(GRect(13, -19 + (bounds.size.h * 0.75), 20, 28));
+  player_sets = text_layer_create(GRect(13, STATUS_BAR_LAYER_HEIGHT - 19 + (available_height * 0.75), 20, 28));
   text_layer_set_text(player_sets, "0");
   text_layer_set_font(player_sets, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
   text_layer_set_text_alignment(player_sets, GTextAlignmentCenter);
   layer_add_child(window_layer, (Layer *) player_sets);
 
   // Opponent sets
-  opponent_sets = text_layer_create(GRect(13, -19 + (bounds.size.h / 4), 20, 28));
+  opponent_sets = text_layer_create(GRect(13, STATUS_BAR_LAYER_HEIGHT - 19 + (available_height / 4), 20, 28));
   text_layer_set_text(opponent_sets, "0");
   text_layer_set_font(opponent_sets, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
   text_layer_set_text_alignment(opponent_sets, GTextAlignmentCenter);
   layer_add_child(window_layer, (Layer *) opponent_sets);
 
   // Player games
-  player_games = text_layer_create(GRect(42, -19 + (bounds.size.h * 0.75), 30, 28));
+  player_games = text_layer_create(GRect(42, STATUS_BAR_LAYER_HEIGHT - 19 + (available_height * 0.75), 30, 28));
   text_layer_set_text(player_games, "0");
   text_layer_set_font(player_games, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
   text_layer_set_text_alignment(player_games, GTextAlignmentCenter);
   layer_add_child(window_layer, (Layer *) player_games);
 
   // Opponent games
-  opponent_games = text_layer_create(GRect(42, -19 + (bounds.size.h / 4), 30, 28));
+  opponent_games = text_layer_create(GRect(42, STATUS_BAR_LAYER_HEIGHT - 19 + (available_height / 4), 30, 28));
   text_layer_set_text(opponent_games, "0");
   text_layer_set_font(opponent_games, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
   text_layer_set_text_alignment(opponent_games, GTextAlignmentCenter);
   layer_add_child(window_layer, (Layer *) opponent_games);
 
   // Player score
-  player_points = text_layer_create(GRect(bounds.size.w / 2, 14 + bounds.size.h / 2, -10 + (bounds.size.w / 2), bounds.size.h / 2));
+  player_points = text_layer_create(GRect(bounds.size.w / 2, STATUS_BAR_LAYER_HEIGHT + 11 + (available_height / 2), -10 + (bounds.size.w / 2), available_height / 2));
   text_layer_set_text(player_points, "0");
   text_layer_set_font(player_points, fonts_get_system_font(FONT_KEY_BITHAM_42_BOLD));
   text_layer_set_text_alignment(player_points, GTextAlignmentCenter);
   layer_add_child(window_layer, (Layer *) player_points);
 
   // Opponent score
-  opponent_points = text_layer_create(GRect(bounds.size.w / 2, 14, -10 + (bounds.size.w / 2), bounds.size.h / 2));
+  opponent_points = text_layer_create(GRect(bounds.size.w / 2, STATUS_BAR_LAYER_HEIGHT + 11, -10 + (bounds.size.w / 2), available_height / 2));
   text_layer_set_text(opponent_points, "0");
   text_layer_set_font(opponent_points, fonts_get_system_font(FONT_KEY_BITHAM_42_BOLD));
   text_layer_set_text_alignment(opponent_points, GTextAlignmentCenter);
@@ -206,7 +214,7 @@ static void window_load(Window *window) {
   draw_layout();
 
   // Sets label
-  sets_label = text_layer_create(GRect(8, -10 + (bounds.size.h / 2), 28, 20));
+  sets_label = text_layer_create(GRect(8, STATUS_BAR_LAYER_HEIGHT - 10 + (available_height / 2), 28, 20));
   text_layer_set_background_color(sets_label, GColorWhite);
   text_layer_set_text(sets_label, "SETS");
   text_layer_set_font(sets_label, fonts_get_system_font(FONT_KEY_GOTHIC_14));
@@ -214,12 +222,15 @@ static void window_load(Window *window) {
   layer_add_child(window_layer, (Layer *) sets_label);
 
   // Games label
-  games_label = text_layer_create(GRect(38, -10 + (bounds.size.h / 2), 42, 20));
+  games_label = text_layer_create(GRect(38, STATUS_BAR_LAYER_HEIGHT - 10 + (available_height / 2), 42, 20));
   text_layer_set_background_color(games_label, GColorWhite);
   text_layer_set_text(games_label, "GAMES");
   text_layer_set_font(games_label, fonts_get_system_font(FONT_KEY_GOTHIC_14));
   text_layer_set_text_alignment(games_label, GTextAlignmentCenter);
   layer_add_child(window_layer, (Layer *) games_label);
+
+  status_layer = status_bar_layer_create();
+  layer_add_child(window_layer, (Layer *) status_layer);
 
   render(&state);
 
@@ -243,6 +254,9 @@ static void window_unload(Window *window) {
 
   layer_destroy(server_marker_layer);
   server_marker_layer = NULL;
+
+  status_bar_layer_destroy(status_layer);
+  status_layer = NULL;
 
   window_destroy(window);
   s_main_window = NULL;

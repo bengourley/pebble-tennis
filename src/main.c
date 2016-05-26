@@ -23,6 +23,8 @@ void deinit(void) {
 //   };
 //   list_t *serial = list_new();
 //   for (int i = 0; i < 30; i++) add_player_points(serial);
+//   for (int j = 0; j < 18; j++) add_opponent_points(serial);
+//   for (int k = 0; k < 3; k++) add_player_points(serial);
 //   match_window_push(&settings, serial);
 // }
 

@@ -44,8 +44,8 @@ void deinit(void) {
 //   state.opponent_sets = 1;
 //   state.completed_sets[0][0] = 7;
 //   state.completed_sets[0][1] = 6;
-//   state.completed_sets[0][2] = 3;
-//   state.completed_sets[0][3] = 7;
+//   state.completed_sets[0][2] = 7;
+//   state.completed_sets[0][3] = 3;
 //   state.completed_sets[1][0] = 4;
 //   state.completed_sets[1][1] = 6;
 //   state.completed_sets[2][0] = 6;

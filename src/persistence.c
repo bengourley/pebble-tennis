@@ -17,12 +17,14 @@ void load_settings(Settings *settings) {
   if (persist_exists(NUM_SETS)) settings->num_sets = persist_read_int(NUM_SETS);
   if (persist_exists(TIE_BREAKS)) settings->tie_breaks = persist_read_int(TIE_BREAKS);
   if (persist_exists(FINAL_SET)) settings->final_set = persist_read_int(FINAL_SET);
+  if (persist_exists(SCOREBOARD)) settings->scoreboard = persist_read_int(SCOREBOARD);
 }
 
 void save_settings(Settings *settings) {
   persist_write_int(NUM_SETS, settings->num_sets);
   persist_write_int(TIE_BREAKS, settings->tie_breaks);
   persist_write_int(FINAL_SET, settings->final_set);
+  persist_write_int(SCOREBOARD, settings->scoreboard);
 }
 
 void clear_match() {
@@ -84,4 +86,5 @@ void clear_all() {
   persist_delete(FIRST_SERVER);
   persist_delete(SERIALISED_MATCH);
   persist_delete(SERIALISED_MATCH_SIZE);
+  persist_delete(SCOREBOARD);
 }

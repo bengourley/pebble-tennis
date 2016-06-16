@@ -10,7 +10,8 @@ typedef enum {
   FINAL_SET,
   FIRST_SERVER,
   SERIALISED_MATCH,
-  SERIALISED_MATCH_SIZE
+  SERIALISED_MATCH_SIZE,
+  SCOREBOARD
 } PERSIST_KEYS;
 
 void load_settings(Settings *settings);

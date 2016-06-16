@@ -11,7 +11,7 @@ typedef enum {
 
 typedef struct {
   int scorer;
-  int timestamp;
+  unsigned int timestamp;
 } Point;
 
 list_t *serial_new();

@@ -5,7 +5,7 @@ static Window *s_main_window;
 static SimpleMenuLayer *main_menu_layer;
 static SimpleMenuSection main_menu_sections[2];
 static SimpleMenuItem main_menu_items[1];
-static SimpleMenuItem main_menu_item_options[4];
+static SimpleMenuItem main_menu_item_options[5];
 
 static const char *final_set_options[] = { "Tie break at 6-6", "No tie break", "Championship tie break" };
 static const char *switch_options[] = { "Yes", "No" };
@@ -55,6 +55,12 @@ void cycle_tie_breaks_setting() {
   layer_mark_dirty(simple_menu_layer_get_layer(main_menu_layer));
 }
 
+void cycle_scoredboard_setting() {
+  toggle_switch_setting(&settings.scoreboard);
+  main_menu_item_options[3].subtitle = switch_options[settings.scoreboard];
+  layer_mark_dirty(simple_menu_layer_get_layer(main_menu_layer));
+}
+
 void start_match() {
   window_stack_pop(false);
   match_window_push(&settings, serial_new());
@@ -71,6 +77,7 @@ static void window_load(Window *window) {
     , .tie_breaks = YES
     , .final_set = FINAL_SET_SIX_ALL_TIE_BREAK
     , .first_server = PLAYER
+    , .scoreboard = NO
     };
 
   load_settings(&settings);
@@ -88,7 +95,7 @@ static void window_load(Window *window) {
   main_menu_sections[1] = (SimpleMenuSection) {
     .title = "Match Settings",
     .items = main_menu_item_options,
-    .num_items = 3
+    .num_items = 4
   };
 
   main_menu_item_options[0] = (SimpleMenuItem) {
@@ -107,6 +114,12 @@ static void window_load(Window *window) {
     .title = "Final Set",
     .subtitle = final_set_options[settings.final_set],
     .callback = cycle_final_set_setting
+  };
+
+  main_menu_item_options[3] = (SimpleMenuItem) {
+    .title = "Live Scoreboard",
+    .subtitle = switch_options[settings.scoreboard],
+    .callback = cycle_scoredboard_setting
   };
 
   main_menu_layer = simple_menu_layer_create(bounds, window, main_menu_sections, 2, NULL);

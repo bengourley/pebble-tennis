@@ -29,6 +29,64 @@ static StatusBarLayer *status_layer;
 
 static int server;
 
+static void match_event_app_message(Point *p) {
+
+  if (settings.scoreboard == NO) return;
+
+  // Tell the JS app that a match event happened
+  DictionaryIterator *out_iter;
+  AppMessageResult result = app_message_outbox_begin(&out_iter);
+  if (result == APP_MSG_OK) {
+    if (p != NULL) {
+      uint8_t payload[1] = { p->scorer };
+      dict_write_data(out_iter, MESSAGE_KEY_MATCH_EVENT, payload, sizeof(payload));
+      dict_write_uint32(out_iter, MESSAGE_KEY_TIMESTAMP, p->timestamp);
+    } else {
+      uint8_t payload[0] = {};
+      dict_write_data(out_iter, MESSAGE_KEY_MATCH_EVENT, payload, sizeof(payload));
+    }
+    result = app_message_outbox_send();
+    if (result != APP_MSG_OK) APP_LOG(APP_LOG_LEVEL_ERROR, "Error sending the outbox: %d", (int)result);
+  } else {
+    APP_LOG(APP_LOG_LEVEL_ERROR, "Error preparing the outbox: %d", (int)result);
+  }
+}
+
+static void config_change_app_message() {
+
+  if (settings.scoreboard == NO) return;
+
+  // Tell the JS app that the config was updated
+  DictionaryIterator *out_iter;
+  AppMessageResult result = app_message_outbox_begin(&out_iter);
+  if (result == APP_MSG_OK) {
+    uint8_t payload[4] = { settings.num_sets, settings.first_server, settings.tie_breaks, settings.final_set };
+    dict_write_data(out_iter, MESSAGE_KEY_CONFIG_CHANGE, payload, sizeof(payload));
+    result = app_message_outbox_send();
+    if (result != APP_MSG_OK) APP_LOG(APP_LOG_LEVEL_ERROR, "Error sending the outbox: %d", (int)result);
+  } else {
+    APP_LOG(APP_LOG_LEVEL_ERROR, "Error preparing the outbox: %d", (int)result);
+  }
+}
+
+
+static void match_start_app_message() {
+
+  if (settings.scoreboard == NO) return;
+
+  // Tell the JS app that a match was created
+  DictionaryIterator *out_iter;
+  AppMessageResult result = app_message_outbox_begin(&out_iter);
+  if (result == APP_MSG_OK) {
+    uint8_t payload[4] = { settings.num_sets, settings.first_server, settings.tie_breaks, settings.final_set };
+    dict_write_data(out_iter, MESSAGE_KEY_MATCH_START, payload, sizeof(payload));
+    result = app_message_outbox_send();
+    if (result != APP_MSG_OK) APP_LOG(APP_LOG_LEVEL_ERROR, "Error sending the outbox: %d", (int)result);
+  } else {
+    APP_LOG(APP_LOG_LEVEL_ERROR, "Error preparing the outbox: %d", (int)result);
+  }
+}
+
 static void display_score_update(TextLayer *t, char * str, int s, bool is_tie_break) {
   if (is_tie_break) {
     snprintf(str, 3, "%d", s);
@@ -70,6 +128,7 @@ static void show_summary() {
 
 static void opponent_point_click_handler(ClickRecognizerRef recognizer, void *context) {
   add_opponent_points(serial);
+  match_event_app_message((Point *) serial->tail->val);
   State state = compute_state(serial, &settings);
   debug_state(&state);
   render(&state);
@@ -81,6 +140,7 @@ static void opponent_point_click_handler(ClickRecognizerRef recognizer, void *co
 
 static void player_point_click_handler(ClickRecognizerRef recognizer, void *context) {
   add_player_points(serial);
+  match_event_app_message((Point *) serial->tail->val);
   State state = compute_state(serial, &settings);
   debug_state(&state);
   render(&state);
@@ -93,6 +153,7 @@ static void player_point_click_handler(ClickRecognizerRef recognizer, void *cont
 static void undo_click_handler(ClickRecognizerRef recognizer, void *context) {
   if (serial->len > 0) {
     // If there are scores, middle button rewinds
+    match_event_app_message(NULL);
     undo(serial);
   } else {
     // If there is no score yet, middle button toggles first server
@@ -101,6 +162,7 @@ static void undo_click_handler(ClickRecognizerRef recognizer, void *context) {
     } else {
       settings.first_server = PLAYER;
     }
+    config_change_app_message();
   }
   State state = compute_state(serial, &settings);
   debug_state(&state);
@@ -162,6 +224,8 @@ static void window_load(Window *window) {
   // if (!serial) serial = serial_new();
   State state = compute_state(serial, &settings);
   debug_state(&state);
+
+  match_start_app_message();
 
   // Make the text
   Layer *window_layer = window_get_root_layer(window);

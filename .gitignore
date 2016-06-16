@@ -2,3 +2,5 @@
 build
 .lock-waf_linux2_build
 .scratch
+
+node_modules/

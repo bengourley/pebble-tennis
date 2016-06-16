@@ -63,6 +63,7 @@ typedef struct {
   int tie_breaks;
   int final_set;
   int first_server;
+  int scoreboard;
 } Settings;
 
 typedef enum {

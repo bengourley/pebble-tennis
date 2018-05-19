@@ -2,3 +2,4 @@
 build
 .lock-waf_linux2_build
 .scratch
+.DS_Store

@@ -1,5 +1,6 @@
 **/*.gch
 build
 .lock-waf_linux2_build
+.lock-waf_darwin_build
 .scratch
 .DS_Store
